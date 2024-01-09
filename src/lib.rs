@@ -103,7 +103,7 @@ const POSITION: [char; 27] = [
     'R', 'X', 'Y', 'S', 'Z', 'W', 'T', 'U', 'V', // Third layer, `z = 2`.
 ];
 
-struct Board {
+pub struct Board {
     moves: Vec<char>,
 }
 
@@ -113,7 +113,7 @@ impl Board {
         Self { moves: Vec::new() }
     }
 
-    fn has_tris(&self) -> bool {
+    pub fn has_tris(&self) -> bool {
         // The sixth move is the first one a player can win.
         if self.moves.len() < 6 {
             return false;
@@ -127,9 +127,19 @@ impl Board {
     }
 }
 
-struct Match {
+pub struct Match {
     id: String,
-    board: Board,
+    pub board: Board,
+}
+
+impl Match {
+    // Create an empty board.
+    pub fn new(match_id: String) -> Self {
+        Self {
+            id: match_id,
+            board: Board::new(),
+        }
+    }
 }
 
 #[cfg(test)]
