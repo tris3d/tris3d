@@ -1,0 +1,3 @@
+[hooks]
+pre-commit = "cargo test"
+pre-push = "cargo check"
