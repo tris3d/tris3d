@@ -22,7 +22,7 @@
 //
 // - if a and b are equal it is the identity,
 // - otherwise it is cyclic.
-fn semi_sum(a: u8, b: u8) -> u8 {
+pub fn semi_sum(a: u8, b: u8) -> u8 {
     ((a + b) * 2) % 3
 }
 
