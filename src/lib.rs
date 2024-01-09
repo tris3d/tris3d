@@ -121,6 +121,10 @@ impl Board {
 
         return true;
     }
+
+    fn next_player_index(&self) -> usize {
+        return self.moves.len() % 3;
+    }
 }
 
 struct Match {
@@ -137,5 +141,12 @@ mod tests {
         let board = Board::new();
 
         assert_eq!(board.has_tris(), false);
+    }
+
+    #[test]
+    fn empty_board_next_player_index() {
+        let board = Board::new();
+
+        assert_eq!(board.next_player_index(), 0);
     }
 }
