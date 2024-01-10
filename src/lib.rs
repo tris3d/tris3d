@@ -97,7 +97,7 @@ mod z3;
 // ```
 // x, y, z -> x * 9 + y * 3 + z
 // ```
-const POSITION: [char; 27] = [
+static POSITION: [char; 27] = [
     'A', 'H', 'G', 'B', 'I', 'F', 'C', 'D', 'E', // First layer, `z = 0`.
     'J', 'Q', 'P', 'K', '*', 'O', 'L', 'M', 'N', // Second layer, `z = 1`.
     'R', 'X', 'Y', 'S', 'Z', 'W', 'T', 'U', 'V', // Third layer, `z = 2`.
@@ -108,11 +108,24 @@ pub struct Board {
 }
 
 impl Board {
-    // Create an empty board.
+    /// Create an empty board.
     fn new() -> Self {
         Self { moves: Vec::new() }
     }
 
+    /// Add a move to the board.
+    /// It checks that `position` is valid and not already taken.
+    pub fn add_move(self, position: char) -> Board {
+        let mut moves = self.moves.to_vec();
+        for i in 0..POSITION.len() {
+            if position == POSITION[i] && !moves.contains(&position) {
+                moves.push(position);
+            }
+        }
+        Board { moves: moves }
+    }
+
+    /// Check if there is any winner.
     pub fn has_tris(&self) -> bool {
         // The sixth move is the first one a player can win.
         if self.moves.len() < 6 {
@@ -133,7 +146,7 @@ pub struct Match {
 }
 
 impl Match {
-    // Create an empty board.
+    /// Create an new match, with no players and an empty board.
     pub fn new(match_id: String) -> Self {
         Self {
             id: match_id,
@@ -148,15 +161,48 @@ mod tests {
 
     #[test]
     fn empty_board_has_no_tris() {
-        let board = Board::new();
-
-        assert_eq!(board.has_tris(), false);
+        assert_eq!(Board::new().has_tris(), false);
     }
 
     #[test]
     fn empty_board_next_player_index() {
-        let board = Board::new();
+        assert_eq!(Board::new().next_player_index(), 0);
+    }
+
+    #[test]
+    fn add_move_accepts_valid_position() {
+        for i in 0..POSITION.len() {
+            let board = Board::new().add_move(POSITION[i]);
+
+            assert_eq!(board.next_player_index(), 1);
+        }
+    }
+
+    #[test]
+    fn add_move_checks_position_is_valid() {
+        let board = Board::new().add_move(' ');
 
         assert_eq!(board.next_player_index(), 0);
+    }
+
+    #[test]
+    fn add_move_checks_position_is_not_already_taken() {
+        let board = Board::new().add_move('A').add_move('A');
+
+        assert_eq!(board.next_player_index(), 1);
+    }
+
+    #[test]
+    fn board_has_tris() {
+        let board = Board::new()
+            .add_move(POSITION[0])
+            .add_move(POSITION[10])
+            .add_move(POSITION[11])
+            .add_move(POSITION[1])
+            .add_move(POSITION[21])
+            .add_move(POSITION[22])
+            .add_move(POSITION[3]);
+
+        assert_eq!(board.has_tris(), true);
     }
 }
