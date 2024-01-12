@@ -115,14 +115,12 @@ impl Board {
 
     /// Add a move to the board.
     /// It checks that `position` is valid and not already taken.
-    pub fn add_move(self, position: char) -> Board {
-        let mut moves = self.moves.to_vec();
+    pub fn add_move(&mut self, position: char) {
         for i in 0..POSITION.len() {
-            if position == POSITION[i] && !moves.contains(&position) {
-                moves.push(position);
+            if position == POSITION[i] && !self.moves.contains(&position) {
+                self.moves.push(position);
             }
         }
-        Board { moves: moves }
     }
 
     /// Check if there is any winner.
@@ -135,23 +133,37 @@ impl Board {
         return true;
     }
 
-    fn next_player_index(&self) -> usize {
-        return self.moves.len() % 3;
+    pub fn next_player_index(self) -> usize {
+        self.moves.len() % 3
     }
 }
 
+pub struct Player {
+    pub id: String,
+}
+
 pub struct Match {
-    id: String,
     pub board: Board,
+    player_ids: Vec<String>,
 }
 
 impl Match {
     /// Create an new match, with no players and an empty board.
-    pub fn new(match_id: String) -> Self {
+    pub fn new() -> Self {
         Self {
-            id: match_id,
             board: Board::new(),
+            player_ids: Vec::new(),
         }
+    }
+
+    /// Add a player to the match.
+    /// It checks that `player` was not already added.
+    pub fn add_player(&mut self, player: &Player) {
+        self.player_ids.push(player.id.to_owned());
+    }
+
+    pub fn num_players(&self) -> usize {
+        self.player_ids.len()
     }
 }
 
@@ -172,7 +184,8 @@ mod tests {
     #[test]
     fn add_move_accepts_valid_position() {
         for i in 0..POSITION.len() {
-            let board = Board::new().add_move(POSITION[i]);
+            let mut board = Board::new();
+            board.add_move(POSITION[i]);
 
             assert_eq!(board.next_player_index(), 1);
         }
@@ -180,29 +193,88 @@ mod tests {
 
     #[test]
     fn add_move_checks_position_is_valid() {
-        let board = Board::new().add_move(' ');
+        let mut board = Board::new();
+        board.add_move(' ');
 
         assert_eq!(board.next_player_index(), 0);
     }
 
     #[test]
     fn add_move_checks_position_is_not_already_taken() {
-        let board = Board::new().add_move('A').add_move('A');
+        let mut board = Board::new();
+        board.add_move('A');
+        board.add_move('A');
 
         assert_eq!(board.next_player_index(), 1);
     }
 
     #[test]
     fn board_has_tris() {
-        let board = Board::new()
-            .add_move(POSITION[0])
-            .add_move(POSITION[10])
-            .add_move(POSITION[11])
-            .add_move(POSITION[1])
-            .add_move(POSITION[21])
-            .add_move(POSITION[22])
-            .add_move(POSITION[3]);
+        let mut board = Board::new();
+        board.add_move(POSITION[0]);
+        board.add_move(POSITION[10]);
+        board.add_move(POSITION[11]);
+        board.add_move(POSITION[1]);
+        board.add_move(POSITION[21]);
+        board.add_move(POSITION[22]);
+        board.add_move(POSITION[3]);
 
         assert_eq!(board.has_tris(), true);
     }
+
+    #[test]
+    fn new_match_has_no_players() {
+        assert_eq!(Match::new().num_players(), 0);
+    }
+
+    // #[test]
+    // fn add_player_checks_it_was_not_already_added() {
+    //     let player = Player {
+    //         id: String::from("ID"),
+    //     };
+
+    //     let mut tris3d = Match::new();
+    //     tris3d.add_player(&player);
+    //     tris3d.add_player(&player);
+
+    //     assert_eq!(tris3d.num_players(), 2);
+    // }
+
+    #[test]
+    fn add_player_increments_num_players() {
+        let player = Player {
+            id: String::from("ID"),
+        };
+
+        let mut tris3d = Match::new();
+        tris3d.add_player(&player);
+
+        assert_eq!(tris3d.num_players(), 1);
+    }
+
+    // #[test]
+    // fn add_player_does_not_add_more_players_than_allowed() {
+    //     let player_one = Player {
+    //         id: String::from("ID1"),
+    //     };
+    //     let player_two = Player {
+    //         id: String::from("ID2"),
+    //     };
+    //     let player_three = Player {
+    //         id: String::from("ID3"),
+    //     };
+    //     let player_four = Player {
+    //         id: String::from("ID4"),
+    //     };
+
+    //     let mut tris3d = Match::new();
+    //     tris3d.add_player(&player_one);
+    //     assert_eq!(tris3d.num_players(), 1);
+    //     tris3d.add_player(&player_two);
+    //     assert_eq!(tris3d.num_players(), 2);
+    //     tris3d.add_player(&player_three);
+    //     assert_eq!(tris3d.num_players(), 3);
+    //     tris3d.add_player(&player_four);
+    //     assert_eq!(tris3d.num_players(), 3);
+    // }
 }
