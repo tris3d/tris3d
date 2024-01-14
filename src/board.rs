@@ -112,19 +112,34 @@ impl Board {
     }
 
     /// Add a move to the board.
-    /// It checks that `position` is valid and not already taken.
-    pub fn add_move(&mut self, position: char) {
+    pub fn add_move(&mut self, position: char) -> Result<bool, &str> {
+        if self.has_tris() {
+            return Err("Game over, there is already a winner.");
+        }
+        if self.moves.len() == POSITION.len() {
+            return Err("Board is full.");
+        }
+        if self.moves.contains(&position) {
+            return Err("Position already taken.");
+        }
+        let mut position_is_valid = false;
         for i in 0..POSITION.len() {
-            if position == POSITION[i] && !self.moves.contains(&position) {
+            if position == POSITION[i] {
+                position_is_valid = true;
                 self.moves.push(position);
             }
+        }
+        if position_is_valid {
+            return Ok(self.has_tris());
+        } else {
+            return Err("Position is not valid.");
         }
     }
 
     /// Check if there is any winner.
     pub fn has_tris(&self) -> bool {
         // The sixth move is the first one a player can win.
-        if self.moves.len() < 6 {
+        if self.moves.len() < 7 {
             return false;
         }
 
@@ -154,40 +169,66 @@ mod tests {
     fn add_move_accepts_valid_position() {
         for i in 0..POSITION.len() {
             let mut board = Board::new();
-            board.add_move(POSITION[i]);
-
-            assert_eq!(board.next_player_index(), 1);
+            match board.add_move(POSITION[i]) {
+                Ok(_) => assert!(true),
+                Err(_) => assert!(false),
+            }
         }
     }
 
     #[test]
     fn add_move_checks_position_is_valid() {
         let mut board = Board::new();
-        board.add_move(' ');
-
-        assert_eq!(board.next_player_index(), 0);
+        match board.add_move(' ') {
+            Ok(_) => assert!(false),
+            Err(message) => assert_eq!(message, "Position is not valid."),
+        }
     }
 
     #[test]
     fn add_move_checks_position_is_not_already_taken() {
         let mut board = Board::new();
-        board.add_move('A');
-        board.add_move('A');
-
-        assert_eq!(board.next_player_index(), 1);
+        match board.add_move('A') {
+            Ok(_) => assert!(true),
+            Err(_) => assert!(false),
+        }
+        match board.add_move('A') {
+            Ok(_) => assert!(false),
+            Err(message) => assert_eq!(message, "Position already taken."),
+        }
     }
 
     #[test]
-    fn board_has_tris() {
+    fn _has_tris() {
+        // Player one will move 'A', 'B', 'C'.
         let mut board = Board::new();
-        board.add_move(POSITION[0]);
-        board.add_move(POSITION[10]);
-        board.add_move(POSITION[11]);
-        board.add_move(POSITION[1]);
-        board.add_move(POSITION[21]);
-        board.add_move(POSITION[22]);
-        board.add_move(POSITION[3]);
-
-        assert_eq!(board.has_tris(), true);
+        match board.add_move('A') {
+            Ok(has_tris) => assert_eq!(has_tris, false),
+            Err(_) => assert!(false),
+        }
+        match board.add_move('H') {
+            Ok(has_tris) => assert_eq!(has_tris, false),
+            Err(_) => assert!(false),
+        }
+        match board.add_move('G') {
+            Ok(has_tris) => assert_eq!(has_tris, false),
+            Err(_) => assert!(false),
+        }
+        match board.add_move('B') {
+            Ok(has_tris) => assert_eq!(has_tris, false),
+            Err(_) => assert!(false),
+        }
+        match board.add_move('I') {
+            Ok(has_tris) => assert_eq!(has_tris, false),
+            Err(_) => assert!(false),
+        }
+        match board.add_move('F') {
+            Ok(has_tris) => assert_eq!(has_tris, false),
+            Err(_) => assert!(false),
+        }
+        match board.add_move('C') {
+            Ok(has_tris) => assert_eq!(has_tris, true),
+            Err(_) => assert!(false),
+        }
     }
 }
