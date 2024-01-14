@@ -24,11 +24,17 @@ impl Game {
             return Err("Player already added.");
         }
         self.player_ids.push(player_id);
-        return Ok(());
+        Ok(())
     }
 
     pub fn num_players(&self) -> usize {
         self.player_ids.len()
+    }
+}
+
+impl Default for Game {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

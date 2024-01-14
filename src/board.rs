@@ -123,16 +123,16 @@ impl Board {
             return Err("Position already taken.");
         }
         let mut position_is_valid = false;
-        for i in 0..POSITION.len() {
-            if position == POSITION[i] {
+        for p in POSITION {
+            if position == p {
                 position_is_valid = true;
                 self.moves.push(position);
             }
         }
         if position_is_valid {
-            return Ok(self.has_tris());
+            Ok(self.has_tris())
         } else {
-            return Err("Position is not valid.");
+            Err("Position is not valid.")
         }
     }
 
@@ -143,11 +143,17 @@ impl Board {
             return false;
         }
 
-        return true;
+        true
     }
 
     pub fn next_player_index(self) -> usize {
         self.moves.len() % 3
+    }
+}
+
+impl Default for Board {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -199,9 +205,9 @@ mod tests {
     }
 
     #[test]
-    fn _has_tris() {
+    fn simple_game() {
         // Player one will move 'A', 'B', 'C'.
-        let mut board = Board::new();
+        let mut board = Board::default();
         match board.add_move('A') {
             Ok(has_tris) => assert_eq!(has_tris, false),
             Err(_) => assert!(false),

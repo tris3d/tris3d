@@ -9,6 +9,7 @@ use crate::game::Game;
 /// ```
 /// let tris3d = tris3d::new_game();
 /// ```
+#[must_use]
 pub fn new_game() -> Game {
     Game::new()
 }

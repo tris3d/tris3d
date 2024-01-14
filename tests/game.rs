@@ -6,9 +6,18 @@ fn play() {
     let player_2 = String::from("Bob");
     let player_3 = String::from("Neuromancer");
 
-    game.add_player(player_1);
-    game.add_player(player_2);
-    game.add_player(player_3);
+    match game.add_player(player_1) {
+        Ok(_) => {}
+        Err(_) => {}
+    }
+    match game.add_player(player_2) {
+        Ok(_) => {}
+        Err(_) => {}
+    }
+    match game.add_player(player_3) {
+        Ok(_) => {}
+        Err(_) => {}
+    }
 
     assert_eq!(game.board.has_tris(), false);
 }
