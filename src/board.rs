@@ -101,9 +101,40 @@ static POSITION: [char; 27] = [
     'R', 'X', 'Y', 'S', 'Z', 'W', 'T', 'U', 'V', // Third layer, `z = 2`.
 ];
 
-fn is_tris(position1: char, position2: char, position3: char) -> bool {
+fn index_of_position(position: &char) -> Option<usize> {
+    for (i, p) in POSITION.iter().enumerate() {
+        if p == position {
+            return Some(i);
+        }
+    }
+    None
+}
+
+fn is_tris(position1: &char, position2: &char, position3: &char) -> bool {
+    // Positions must be distinct.
     if (position1 == position2) || (position1 == position3) || (position2 == position3) {
         return false;
+    }
+    let index1 = index_of_position(position1);
+    match index1 {
+        Some(_) => {}
+        None => {
+            return false;
+        }
+    }
+    let index2 = index_of_position(position2);
+    match index2 {
+        Some(_) => {}
+        None => {
+            return false;
+        }
+    }
+    let index3 = index_of_position(position3);
+    match index3 {
+        Some(_) => {}
+        None => {
+            return false;
+        }
     }
     // All other cases are not a tris.
     false
@@ -173,7 +204,16 @@ mod tests {
 
     #[test]
     fn is_tris_checks_arguments_are_distinct() {
-        assert_eq!(is_tris('A', 'A', 'B'), false);
+        assert_eq!(is_tris(&'A', &'A', &'B'), false);
+        assert_eq!(is_tris(&'A', &'B', &'A'), false);
+        assert_eq!(is_tris(&'B', &'A', &'A'), false);
+    }
+
+    #[test]
+    fn is_tris_checks_arguments_are_valid() {
+        assert_eq!(is_tris(&' ', &'A', &'B'), false);
+        assert_eq!(is_tris(&'A', &' ', &'B'), false);
+        assert_eq!(is_tris(&'A', &'B', &' '), false);
     }
 
     #[test]
