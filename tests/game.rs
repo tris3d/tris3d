@@ -19,5 +19,5 @@ fn play() {
         Err(_) => {}
     }
 
-    assert_eq!(game.board.has_tris(), false);
+    assert_eq!(game.board.get_num_tris(), 0);
 }

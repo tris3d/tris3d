@@ -101,6 +101,14 @@ static POSITION: [char; 27] = [
     'R', 'X', 'Y', 'S', 'Z', 'W', 'T', 'U', 'V', // Third layer, `z = 2`.
 ];
 
+fn is_tris(position1: char, position2: char, position3: char) -> bool {
+    if (position1 == position2) || (position1 == position3) || (position2 == position3) {
+        return false;
+    }
+    // All other cases are not a tris.
+    false
+}
+
 pub struct Board {
     moves: Vec<char>,
 }
@@ -112,8 +120,9 @@ impl Board {
     }
 
     /// Add a move to the board.
-    pub fn add_move(&mut self, position: char) -> Result<bool, &str> {
-        if self.has_tris() {
+    /// Return the number of winning combinations.
+    pub fn add_move(&mut self, position: char) -> Result<u8, &str> {
+        if self.get_num_tris() > 0 {
             return Err("Game over, there is already a winner.");
         }
         if self.moves.len() == POSITION.len() {
@@ -127,23 +136,24 @@ impl Board {
             if position == p {
                 position_is_valid = true;
                 self.moves.push(position);
+                break;
             }
         }
         if position_is_valid {
-            Ok(self.has_tris())
+            Ok(self.get_num_tris())
         } else {
             Err("Position is not valid.")
         }
     }
 
     /// Check if there is any winner.
-    pub fn has_tris(&self) -> bool {
-        // The sixth move is the first one a player can win.
+    pub fn get_num_tris(&self) -> u8 {
+        // No player can win before the seventh move.
         if self.moves.len() < 7 {
-            return false;
+            return 0;
         }
 
-        true
+        1
     }
 
     pub fn next_player_index(self) -> usize {
@@ -162,8 +172,13 @@ mod tests {
     use super::*;
 
     #[test]
+    fn is_tris_checks_arguments_are_distinct() {
+        assert_eq!(is_tris('A', 'A', 'B'), false);
+    }
+
+    #[test]
     fn empty_board_has_no_tris() {
-        assert_eq!(Board::new().has_tris(), false);
+        assert_eq!(Board::new().get_num_tris(), 0);
     }
 
     #[test]
@@ -209,31 +224,31 @@ mod tests {
         // Player one will move 'A', 'B', 'C'.
         let mut board = Board::default();
         match board.add_move('A') {
-            Ok(has_tris) => assert_eq!(has_tris, false),
+            Ok(num_tris) => assert_eq!(num_tris, 0),
             Err(_) => assert!(false),
         }
         match board.add_move('H') {
-            Ok(has_tris) => assert_eq!(has_tris, false),
+            Ok(num_tris) => assert_eq!(num_tris, 0),
             Err(_) => assert!(false),
         }
         match board.add_move('G') {
-            Ok(has_tris) => assert_eq!(has_tris, false),
+            Ok(num_tris) => assert_eq!(num_tris, 0),
             Err(_) => assert!(false),
         }
         match board.add_move('B') {
-            Ok(has_tris) => assert_eq!(has_tris, false),
+            Ok(num_tris) => assert_eq!(num_tris, 0),
             Err(_) => assert!(false),
         }
         match board.add_move('I') {
-            Ok(has_tris) => assert_eq!(has_tris, false),
+            Ok(num_tris) => assert_eq!(num_tris, 0),
             Err(_) => assert!(false),
         }
         match board.add_move('F') {
-            Ok(has_tris) => assert_eq!(has_tris, false),
+            Ok(num_tris) => assert_eq!(num_tris, 0),
             Err(_) => assert!(false),
         }
         match board.add_move('C') {
-            Ok(has_tris) => assert_eq!(has_tris, true),
+            Ok(num_tris) => assert_eq!(num_tris, 1),
             Err(_) => assert!(false),
         }
     }
