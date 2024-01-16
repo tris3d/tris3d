@@ -110,32 +110,55 @@ fn index_of_position(position: &char) -> Option<usize> {
     None
 }
 
-fn is_tris(position1: &char, position2: &char, position3: &char) -> bool {
+// A "tris" is a winning set of moves in the tris3d board.
+fn is_tris(position_a: &char, position_b: &char, position_c: &char) -> bool {
     // Positions must be distinct.
-    if (position1 == position2) || (position1 == position3) || (position2 == position3) {
+    if (position_a == position_b) || (position_a == position_c) || (position_b == position_c) {
         return false;
     }
-    let index1 = index_of_position(position1);
-    match index1 {
+    let index_a = index_of_position(position_a);
+    match index_a {
         Some(_) => {}
         None => {
             return false;
         }
     }
-    let index2 = index_of_position(position2);
-    match index2 {
+    let index_b = index_of_position(position_b);
+    match index_b {
         Some(_) => {}
         None => {
             return false;
         }
     }
-    let index3 = index_of_position(position3);
-    match index3 {
+    let index_c = index_of_position(position_c);
+    match index_c {
         Some(_) => {}
         None => {
             return false;
         }
     }
+
+    // Let T = (a, b, c) be a tern of vectors.
+    // let vector_a = z3xz3xz3_coordinates_of_index(index_a);
+    // let vector_b = z3xz3xz3_coordinates_of_index(index_b);
+    // let vector_c = z3xz3xz3_coordinates_of_index(index_c);
+
+    // A necessary condition to be a tris is that
+    //
+    //     semi-sum(a, b) = c
+    //
+    // Since semi-sum is cyclic, then a, b, c can be choosen in any order.
+    // let vector_semi_sum = z3xz3xz3_semi_sum(vector_a, vector_b);
+    // if index_of_z3xz3xz3_coordinates(vector_semi_sum) != index_c {
+    //     return false;
+    // }
+
+    // Here the vectors are aligned.
+    // If any vector is the center then T is a tris.
+    // if (index_a == Some(13)) || (index_b == Some(13)) || (index_c == Some(13)) {
+    //     return true;
+    // }
+
     // All other cases are not a tris.
     false
 }
@@ -256,6 +279,16 @@ mod tests {
         match board.add_move('A') {
             Ok(_) => assert!(false),
             Err(message) => assert_eq!(message, "Position already taken."),
+        }
+    }
+
+    #[test]
+    fn index_of_position_finds_valid_position() {
+        for (i, p) in POSITION.iter().enumerate() {
+            match index_of_position(p) {
+                Some(index) => assert_eq!(index, i),
+                None => assert!(false),
+            }
         }
     }
 
