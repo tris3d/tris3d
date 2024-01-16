@@ -1,6 +1,7 @@
 mod board;
 mod game;
 mod z3;
+mod z3xz3xz3;
 
 use crate::game::Game;
 
