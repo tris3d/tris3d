@@ -33,6 +33,75 @@ fn vector_of_position(position: char) -> Option<Z3xZ3xZ3Vector> {
     }
 }
 
+fn position_of_vector(vector: Z3xZ3xZ3Vector) -> Option<char> {
+    match vector.0 {
+        0 => match vector.1 {
+            0 => match vector.2 {
+                0 => Some('A'),
+                1 => Some('J'),
+                2 => Some('R'),
+                _ => None,
+            },
+            1 => match vector.2 {
+                0 => Some('B'),
+                1 => Some('K'),
+                2 => Some('S'),
+                _ => None,
+            },
+            2 => match vector.2 {
+                0 => Some('C'),
+                1 => Some('L'),
+                2 => Some('R'),
+                _ => None,
+            },
+            _ => None,
+        },
+        1 => match vector.1 {
+            0 => match vector.2 {
+                0 => Some('H'),
+                1 => Some('Q'),
+                2 => Some('X'),
+                _ => None,
+            },
+            1 => match vector.2 {
+                0 => Some('I'),
+                1 => Some('*'),
+                2 => Some('Z'),
+                _ => None,
+            },
+            2 => match vector.2 {
+                0 => Some('D'),
+                1 => Some('M'),
+                2 => Some('U'),
+                _ => None,
+            },
+            _ => None,
+        },
+        2 => match vector.1 {
+            0 => match vector.2 {
+                0 => Some('G'),
+                1 => Some('P'),
+                2 => Some('Y'),
+                _ => None,
+            },
+            1 => match vector.2 {
+                0 => Some('F'),
+                1 => Some('O'),
+                2 => Some('W'),
+                _ => None,
+            },
+            2 => match vector.2 {
+                0 => Some('E'),
+                1 => Some('N'),
+                2 => Some('V'),
+                _ => None,
+            },
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub enum GetIsWinningCombinationError {
     InvalidPosition,
@@ -45,17 +114,14 @@ pub fn get_is_winning_combination(
     position_c: char,
 ) -> Result<bool, GetIsWinningCombinationError> {
     // Let T = (a, b, c) be a tern of vectors.
-    let vector_a = match vector_of_position(position_a) {
-        Some(vector) => vector,
-        None => return Err(GetIsWinningCombinationError::InvalidPosition),
+    let Some(vector_a) = vector_of_position(position_a) else {
+        return Err(GetIsWinningCombinationError::InvalidPosition);
     };
-    let vector_b = match vector_of_position(position_b) {
-        Some(vector) => vector,
-        None => return Err(GetIsWinningCombinationError::InvalidPosition),
+    let Some(vector_b) = vector_of_position(position_b) else {
+        return Err(GetIsWinningCombinationError::InvalidPosition);
     };
-    let vector_c = match vector_of_position(position_c) {
-        Some(vector) => vector,
-        None => return Err(GetIsWinningCombinationError::InvalidPosition),
+    let Some(vector_c) = vector_of_position(position_c) else {
+        return Err(GetIsWinningCombinationError::InvalidPosition);
     };
 
     if (position_a == position_b) || (position_a == position_c) || (position_b == position_c) {
@@ -272,6 +338,18 @@ mod tests {
     #[test]
     fn get_is_winning_combination_works() {
         match get_is_winning_combination('A', '*', 'V') {
+            Ok(result) => {
+                assert_eq!(true, result)
+            }
+            Err(_) => {
+                assert!(false)
+            }
+        }
+        let (vector1, vector2, vector3) = WINNING_COMBINATIONS[75];
+        let position_1 = position_of_vector(vector1).unwrap();
+        let position_2 = position_of_vector(vector2).unwrap();
+        let position_3 = position_of_vector(vector3).unwrap();
+        match get_is_winning_combination(position_1, position_2, position_3) {
             Ok(result) => {
                 assert_eq!(true, result)
             }

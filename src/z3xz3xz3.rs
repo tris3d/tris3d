@@ -8,18 +8,6 @@ pub fn are_equal(a: Z3xZ3xZ3Vector, b: Z3xZ3xZ3Vector) -> bool {
     (a.0 % 3 == b.0 % 3) && (a.1 % 3 == b.1 % 3) && (a.2 % 3 == b.2 % 3)
 }
 
-pub fn coordinates_of_index(index: u8) -> Z3xZ3xZ3Vector {
-    (
-        (index - (index % 9)) / 9,
-        ((index - (index % 3)) / 3) % 3,
-        index % 3,
-    )
-}
-
-pub fn index_of_coordinates(vector: Z3xZ3xZ3Vector) -> u8 {
-    vector.0 * 9 + vector.1 * 3 + vector.2
-}
-
 // Semi-sum operator in Z3xZ3xZ3.
 //
 // Same as the Z3 semi-sum, the Z3xZ3xZ3 semi-sum operator has the following properties:
@@ -38,6 +26,15 @@ pub fn semi_sum(a: Z3xZ3xZ3Vector, b: Z3xZ3xZ3Vector) -> Z3xZ3xZ3Vector {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // Helper function.
+    fn coordinates_of_index(index: u8) -> Z3xZ3xZ3Vector {
+        (
+            (index - (index % 9)) / 9,
+            ((index - (index % 3)) / 3) % 3,
+            index % 3,
+        )
+    }
 
     #[test]
     fn are_equal_works() {
@@ -76,44 +73,6 @@ mod tests {
         assert_eq!(coordinates_of_index(24), (2, 2, 0));
         assert_eq!(coordinates_of_index(25), (2, 2, 1));
         assert_eq!(coordinates_of_index(26), (2, 2, 2));
-    }
-
-    #[test]
-    fn index_of_coordinates_works() {
-        assert_eq!(index_of_coordinates((0, 0, 0)), 0);
-        assert_eq!(index_of_coordinates((0, 0, 1)), 1);
-        assert_eq!(index_of_coordinates((0, 0, 2)), 2);
-        assert_eq!(index_of_coordinates((0, 1, 0)), 3);
-        assert_eq!(index_of_coordinates((0, 1, 1)), 4);
-        assert_eq!(index_of_coordinates((0, 1, 2)), 5);
-        assert_eq!(index_of_coordinates((0, 2, 0)), 6);
-        assert_eq!(index_of_coordinates((0, 2, 1)), 7);
-        assert_eq!(index_of_coordinates((0, 2, 2)), 8);
-        assert_eq!(index_of_coordinates((1, 0, 0)), 9);
-        assert_eq!(index_of_coordinates((1, 0, 1)), 10);
-        assert_eq!(index_of_coordinates((1, 0, 2)), 11);
-        assert_eq!(index_of_coordinates((1, 1, 0)), 12);
-        assert_eq!(index_of_coordinates((1, 1, 1)), 13);
-        assert_eq!(index_of_coordinates((1, 1, 2)), 14);
-        assert_eq!(index_of_coordinates((1, 2, 0)), 15);
-        assert_eq!(index_of_coordinates((1, 2, 1)), 16);
-        assert_eq!(index_of_coordinates((1, 2, 2)), 17);
-        assert_eq!(index_of_coordinates((2, 0, 0)), 18);
-        assert_eq!(index_of_coordinates((2, 0, 1)), 19);
-        assert_eq!(index_of_coordinates((2, 0, 2)), 20);
-        assert_eq!(index_of_coordinates((2, 1, 0)), 21);
-        assert_eq!(index_of_coordinates((2, 1, 1)), 22);
-        assert_eq!(index_of_coordinates((2, 1, 2)), 23);
-        assert_eq!(index_of_coordinates((2, 2, 0)), 24);
-        assert_eq!(index_of_coordinates((2, 2, 1)), 25);
-        assert_eq!(index_of_coordinates((2, 2, 2)), 26);
-    }
-
-    #[test]
-    fn index_of_coordinates_is_inverse_of_coordinates_of_index() {
-        for i in 0..27 {
-            assert_eq!(index_of_coordinates(coordinates_of_index(i)), i)
-        }
     }
 
     #[test]

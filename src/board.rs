@@ -1,5 +1,4 @@
 use crate::winning_combinations::get_is_winning_combination;
-use crate::z3xz3xz3::{are_equal, semi_sum, Z3xZ3xZ3Vector};
 
 // Every board cell is associated with an uppercase latin letter
 // or the asterisc for the center. To enumerate cells, start from the center,
