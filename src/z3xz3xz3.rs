@@ -2,7 +2,9 @@ use crate::z3;
 
 // Z3xZ3xZ3 is a three dimensional space immersed in euclidian three dimensional space R3.
 
-pub fn coordinates_of_index(index: u8) -> (u8, u8, u8) {
+pub type Z3xZ3xZ3Vector = (u8, u8, u8);
+
+pub fn coordinates_of_index(index: u8) -> Z3xZ3xZ3Vector {
     (
         (index - (index % 9)) / 9,
         ((index - (index % 3)) / 3) % 3,
@@ -10,7 +12,7 @@ pub fn coordinates_of_index(index: u8) -> (u8, u8, u8) {
     )
 }
 
-pub fn index_of_coordinates(vector: (u8, u8, u8)) -> u8 {
+pub fn index_of_coordinates(vector: Z3xZ3xZ3Vector) -> u8 {
     vector.0 * 9 + vector.1 * 3 + vector.2
 }
 
@@ -21,7 +23,7 @@ pub fn index_of_coordinates(vector: (u8, u8, u8)) -> u8 {
 //
 // Another remarkable property of Z3xZ3xZ3 semi-sum is that if arguments are on the same line,
 // the result is aligned with arguments.
-pub fn semi_sum(a: (u8, u8, u8), b: (u8, u8, u8)) -> (u8, u8, u8) {
+pub fn semi_sum(a: Z3xZ3xZ3Vector, b: Z3xZ3xZ3Vector) -> Z3xZ3xZ3Vector {
     (
         z3::semi_sum(a.0, b.0),
         z3::semi_sum(a.1, b.1),
@@ -48,6 +50,20 @@ mod tests {
         assert_eq!(coordinates_of_index(10), (1, 0, 1));
         assert_eq!(coordinates_of_index(11), (1, 0, 2));
         assert_eq!(coordinates_of_index(12), (1, 1, 0));
+        assert_eq!(coordinates_of_index(13), (1, 1, 1));
+        assert_eq!(coordinates_of_index(14), (1, 1, 2));
+        assert_eq!(coordinates_of_index(15), (1, 2, 0));
+        assert_eq!(coordinates_of_index(16), (1, 2, 1));
+        assert_eq!(coordinates_of_index(17), (1, 2, 2));
+        assert_eq!(coordinates_of_index(18), (2, 0, 0));
+        assert_eq!(coordinates_of_index(19), (2, 0, 1));
+        assert_eq!(coordinates_of_index(20), (2, 0, 2));
+        assert_eq!(coordinates_of_index(21), (2, 1, 0));
+        assert_eq!(coordinates_of_index(22), (2, 1, 1));
+        assert_eq!(coordinates_of_index(23), (2, 1, 2));
+        assert_eq!(coordinates_of_index(24), (2, 2, 0));
+        assert_eq!(coordinates_of_index(25), (2, 2, 1));
+        assert_eq!(coordinates_of_index(26), (2, 2, 2));
     }
 
     #[test]

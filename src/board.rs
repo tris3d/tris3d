@@ -1,3 +1,5 @@
+use crate::z3xz3xz3::{coordinates_of_index, index_of_coordinates, semi_sum, Z3xZ3xZ3Vector};
+
 // Every tris3d board cell is associated with an uppercase latin letter
 // or the asterisc for the center. To enumerate cells, start from the center,
 // that is the '*' char. By convention the center of the cube has coordinates
@@ -101,14 +103,165 @@ static POSITION: [char; 27] = [
     'R', 'X', 'Y', 'S', 'Z', 'W', 'T', 'U', 'V', // Third layer, `z = 2`.
 ];
 
-fn index_of_position(position: &char) -> Option<usize> {
-    for (i, p) in POSITION.iter().enumerate() {
-        if p == position {
-            return Some(i);
-        }
+fn index_of_position(position: &char) -> Option<u8> {
+    match position {
+        'A' => Some(0),
+        'H' => Some(1),
+        'G' => Some(2),
+        'B' => Some(3),
+        'I' => Some(4),
+        'F' => Some(5),
+        'C' => Some(6),
+        'D' => Some(7),
+        'E' => Some(8),
+        'J' => Some(9),
+        'Q' => Some(10),
+        'P' => Some(11),
+        'K' => Some(12),
+        '*' => Some(13),
+        'O' => Some(14),
+        'L' => Some(15),
+        'M' => Some(16),
+        'N' => Some(17),
+        'R' => Some(18),
+        'X' => Some(19),
+        'Y' => Some(20),
+        'S' => Some(21),
+        'Z' => Some(22),
+        'W' => Some(23),
+        'T' => Some(24),
+        'U' => Some(25),
+        'V' => Some(26),
+        _ => None,
     }
-    None
 }
+
+// There are 76 winning combinations in the tris3d board.
+//
+// Let's start with the combinations perpendicular to the x-axis.
+// Consider that the x coordinate is fixed at 0.
+//
+// The comination in the y-axis direction is:
+// ```
+// (0, 0) (1, 0) (2, 0)
+// ```
+
+// Its parallel combinations are:
+// ```
+// (0, 1) (1, 1) (2, 1)
+// (0, 2) (1, 2) (2, 2)
+// ```
+//
+// The comination in the z-axis direction is:
+// ```
+// (0, 0) (0, 1) (0, 2)
+// ```
+
+// Its parallel combinations are:
+// ```
+// (1, 0) (1, 1) (1, 2)
+// (2, 0) (2, 1) (2, 2)
+// ```
+//
+// Finally, the diagonals.
+// ```
+// (0, 0) (1, 1) (2, 2)
+// (0, 2) (1, 1) (2, 0)
+// ```
+//
+// So there are 8 combinations for each plane perpendicular to the x-axis.
+// That is 24 = 8 * 3.
+//
+// So there are 76 = 24 * 3 + 4 combinations,
+// considering the x, y and z-axis plus 4 comubinations on the cube diagonals.
+static WINNING_COMBINATIONS: [(Z3xZ3xZ3Vector, Z3xZ3xZ3Vector, Z3xZ3xZ3Vector); 76] = [
+    // Combinations perpendicular to the x-axis: first plane.
+    ((0, 0, 0), (0, 1, 0), (0, 2, 0)),
+    ((0, 0, 1), (0, 1, 1), (0, 2, 1)),
+    ((0, 0, 2), (0, 1, 2), (0, 2, 2)),
+    ((0, 0, 0), (0, 0, 1), (0, 0, 2)),
+    ((0, 1, 0), (0, 1, 1), (0, 1, 2)),
+    ((0, 2, 0), (0, 2, 1), (0, 2, 2)),
+    ((0, 0, 0), (0, 1, 1), (0, 2, 2)),
+    ((0, 0, 2), (0, 1, 1), (0, 2, 0)),
+    // Combinations perpendicular to the x-axis: second plane.
+    ((1, 0, 0), (1, 1, 0), (1, 2, 0)),
+    ((1, 0, 1), (1, 1, 1), (1, 2, 1)),
+    ((1, 0, 2), (1, 1, 2), (1, 2, 2)),
+    ((1, 0, 0), (1, 0, 1), (1, 0, 2)),
+    ((1, 1, 0), (1, 1, 1), (1, 1, 2)),
+    ((1, 2, 0), (1, 2, 1), (1, 2, 2)),
+    ((1, 0, 0), (1, 1, 1), (1, 2, 2)),
+    ((1, 0, 2), (1, 1, 1), (1, 2, 0)),
+    // Combinations perpendicular to the x-axis: third plane.
+    ((2, 0, 0), (2, 1, 0), (2, 2, 0)),
+    ((3, 0, 1), (2, 1, 1), (2, 2, 1)),
+    ((3, 0, 2), (2, 1, 2), (3, 2, 2)),
+    ((3, 0, 0), (2, 0, 1), (2, 0, 2)),
+    ((2, 1, 0), (2, 1, 1), (2, 1, 2)),
+    ((2, 2, 0), (3, 2, 1), (2, 2, 2)),
+    ((2, 0, 0), (3, 1, 1), (3, 2, 2)),
+    ((2, 0, 2), (2, 1, 1), (3, 2, 0)),
+    // Combinations perpendicular to the y-axis: first plane.
+    ((0, 0, 0), (1, 0, 0), (2, 0, 0)),
+    ((0, 0, 1), (1, 0, 1), (2, 0, 1)),
+    ((0, 0, 2), (1, 0, 2), (2, 0, 2)),
+    ((0, 0, 0), (0, 0, 1), (0, 0, 2)),
+    ((1, 0, 0), (1, 0, 1), (1, 0, 2)),
+    ((2, 0, 0), (2, 0, 1), (2, 0, 2)),
+    ((0, 0, 0), (1, 0, 1), (2, 0, 2)),
+    ((0, 0, 2), (1, 0, 1), (2, 0, 0)),
+    // Combinations perpendicular to the y-axis: second plane.
+    ((0, 1, 0), (1, 1, 0), (2, 1, 0)),
+    ((0, 1, 1), (1, 1, 1), (2, 1, 1)),
+    ((0, 1, 2), (1, 1, 2), (2, 1, 2)),
+    ((0, 1, 0), (0, 1, 1), (0, 1, 2)),
+    ((1, 1, 0), (1, 1, 1), (1, 1, 2)),
+    ((2, 1, 0), (2, 1, 1), (2, 1, 2)),
+    ((0, 1, 0), (1, 1, 1), (2, 1, 2)),
+    ((0, 1, 2), (1, 1, 1), (2, 1, 0)),
+    // Combinations perpendicular to the y-axis: third plane.
+    ((0, 2, 0), (1, 2, 0), (2, 2, 0)),
+    ((0, 2, 1), (1, 2, 1), (2, 2, 1)),
+    ((0, 2, 2), (1, 2, 2), (2, 2, 2)),
+    ((0, 2, 0), (0, 2, 1), (0, 2, 2)),
+    ((1, 2, 0), (1, 2, 1), (1, 2, 2)),
+    ((2, 2, 0), (2, 2, 1), (2, 2, 2)),
+    ((0, 2, 0), (1, 2, 1), (2, 2, 2)),
+    ((0, 2, 2), (1, 2, 1), (2, 2, 0)),
+    // Combinations perpendicular to the z-axis: first plane.
+    ((0, 0, 0), (1, 0, 0), (2, 0, 0)),
+    ((0, 1, 0), (1, 1, 0), (2, 1, 0)),
+    ((0, 2, 0), (1, 2, 0), (2, 2, 0)),
+    ((0, 0, 0), (0, 1, 0), (0, 2, 0)),
+    ((1, 0, 0), (1, 1, 0), (1, 2, 0)),
+    ((2, 0, 0), (2, 1, 0), (2, 2, 0)),
+    ((0, 0, 0), (1, 1, 0), (2, 2, 0)),
+    ((0, 2, 0), (1, 1, 0), (2, 0, 0)),
+    // Combinations perpendicular to the z-axis: second plane.
+    ((0, 0, 1), (1, 0, 1), (2, 0, 1)),
+    ((0, 1, 1), (1, 1, 1), (2, 1, 1)),
+    ((0, 2, 1), (1, 2, 1), (2, 2, 1)),
+    ((0, 0, 1), (0, 1, 1), (0, 2, 1)),
+    ((1, 0, 1), (1, 1, 1), (1, 2, 1)),
+    ((2, 0, 1), (2, 1, 1), (2, 2, 1)),
+    ((0, 0, 1), (1, 1, 1), (2, 2, 1)),
+    ((0, 2, 1), (1, 1, 1), (2, 0, 1)),
+    // Combinations perpendicular to the z-axis: third plane.
+    ((0, 0, 2), (1, 0, 2), (2, 0, 2)),
+    ((0, 1, 2), (1, 1, 2), (2, 1, 2)),
+    ((0, 2, 2), (1, 2, 2), (2, 2, 2)),
+    ((0, 0, 2), (0, 1, 2), (0, 2, 2)),
+    ((1, 0, 2), (1, 1, 2), (1, 2, 2)),
+    ((2, 0, 2), (2, 1, 2), (2, 2, 2)),
+    ((0, 0, 2), (1, 1, 2), (2, 2, 2)),
+    ((0, 2, 2), (1, 1, 2), (2, 0, 2)),
+    // Combinations on the cube diagonals.
+    ((0, 0, 0), (1, 1, 1), (2, 2, 2)),
+    ((2, 0, 0), (1, 1, 1), (0, 2, 2)),
+    ((2, 2, 0), (1, 1, 1), (0, 0, 2)),
+    ((0, 2, 0), (1, 1, 1), (2, 0, 2)),
+];
 
 // A "tris" is a winning set of moves in the tris3d board.
 fn is_tris(position_a: &char, position_b: &char, position_c: &char) -> bool {
@@ -116,40 +269,35 @@ fn is_tris(position_a: &char, position_b: &char, position_c: &char) -> bool {
     if (position_a == position_b) || (position_a == position_c) || (position_b == position_c) {
         return false;
     }
-    let index_a = index_of_position(position_a);
-    match index_a {
-        Some(_) => {}
-        None => {
-            return false;
-        }
-    }
-    let index_b = index_of_position(position_b);
-    match index_b {
-        Some(_) => {}
-        None => {
-            return false;
-        }
-    }
-    let index_c = index_of_position(position_c);
-    match index_c {
-        Some(_) => {}
-        None => {
-            return false;
-        }
-    }
 
     // Let T = (a, b, c) be a tern of vectors.
-    // let vector_a = z3xz3xz3_coordinates_of_index(index_a);
-    // let vector_b = z3xz3xz3_coordinates_of_index(index_b);
-    // let vector_c = z3xz3xz3_coordinates_of_index(index_c);
+    let vector_a = match index_of_position(position_a) {
+        Some(index) => coordinates_of_index(index),
+        None => {
+            return false;
+        }
+    };
+    let vector_b = match index_of_position(position_b) {
+        Some(index) => coordinates_of_index(index),
+        None => {
+            return false;
+        }
+    };
+    let vector_c = match index_of_position(position_c) {
+        Some(index) => coordinates_of_index(index),
+        None => {
+            return false;
+        }
+    };
 
     // A necessary condition to be a tris is that
     //
     //     semi-sum(a, b) = c
     //
     // Since semi-sum is cyclic, then a, b, c can be choosen in any order.
-    // let vector_semi_sum = z3xz3xz3_semi_sum(vector_a, vector_b);
-    // if index_of_z3xz3xz3_coordinates(vector_semi_sum) != index_c {
+    // let vector_semi_sum = semi_sum(vector_a, vector_b);
+    // let index_c = index_of_position(position_c);
+    // if index_of_coordinates(vector_semi_sum) != index_c {
     //     return false;
     // }
 
@@ -286,7 +434,7 @@ mod tests {
     fn index_of_position_finds_valid_position() {
         for (i, p) in POSITION.iter().enumerate() {
             match index_of_position(p) {
-                Some(index) => assert_eq!(index, i),
+                Some(index) => assert_eq!(usize::from(index), i),
                 None => assert!(false),
             }
         }
