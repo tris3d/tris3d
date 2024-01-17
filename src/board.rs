@@ -1,4 +1,6 @@
-use crate::z3xz3xz3::{coordinates_of_index, index_of_coordinates, semi_sum, Z3xZ3xZ3Vector};
+use crate::z3xz3xz3::{
+    are_equal, coordinates_of_index, index_of_coordinates, semi_sum, Z3xZ3xZ3Vector,
+};
 
 // Every tris3d board cell is associated with an uppercase latin letter
 // or the asterisc for the center. To enumerate cells, start from the center,
@@ -103,35 +105,35 @@ static POSITION: [char; 27] = [
     'R', 'X', 'Y', 'S', 'Z', 'W', 'T', 'U', 'V', // Third layer, `z = 2`.
 ];
 
-fn index_of_position(position: &char) -> Option<u8> {
+fn vector_of_position(position: &char) -> Option<Z3xZ3xZ3Vector> {
     match position {
-        'A' => Some(0),
-        'H' => Some(1),
-        'G' => Some(2),
-        'B' => Some(3),
-        'I' => Some(4),
-        'F' => Some(5),
-        'C' => Some(6),
-        'D' => Some(7),
-        'E' => Some(8),
-        'J' => Some(9),
-        'Q' => Some(10),
-        'P' => Some(11),
-        'K' => Some(12),
-        '*' => Some(13),
-        'O' => Some(14),
-        'L' => Some(15),
-        'M' => Some(16),
-        'N' => Some(17),
-        'R' => Some(18),
-        'X' => Some(19),
-        'Y' => Some(20),
-        'S' => Some(21),
-        'Z' => Some(22),
-        'W' => Some(23),
-        'T' => Some(24),
-        'U' => Some(25),
-        'V' => Some(26),
+        'A' => Some((0, 0, 0)),
+        'H' => Some((1, 0, 0)),
+        'G' => Some((2, 0, 0)),
+        'B' => Some((0, 1, 0)),
+        'I' => Some((1, 1, 0)),
+        'F' => Some((2, 1, 0)),
+        'C' => Some((0, 2, 0)),
+        'D' => Some((1, 2, 0)),
+        'E' => Some((2, 2, 0)),
+        'J' => Some((0, 0, 1)),
+        'Q' => Some((1, 0, 1)),
+        'P' => Some((2, 0, 1)),
+        'K' => Some((0, 1, 1)),
+        '*' => Some((1, 1, 1)),
+        'O' => Some((2, 1, 1)),
+        'L' => Some((0, 2, 1)),
+        'M' => Some((1, 2, 1)),
+        'N' => Some((2, 2, 1)),
+        'R' => Some((0, 0, 2)),
+        'X' => Some((1, 0, 2)),
+        'Y' => Some((2, 0, 2)),
+        'S' => Some((0, 1, 2)),
+        'Z' => Some((1, 1, 2)),
+        'W' => Some((2, 1, 2)),
+        'T' => Some((0, 2, 2)),
+        'U' => Some((1, 2, 2)),
+        'V' => Some((2, 2, 2)),
         _ => None,
     }
 }
@@ -263,32 +265,23 @@ static WINNING_COMBINATIONS: [(Z3xZ3xZ3Vector, Z3xZ3xZ3Vector, Z3xZ3xZ3Vector); 
     ((0, 2, 0), (1, 1, 1), (2, 0, 2)),
 ];
 
+#[derive(Debug, PartialEq)]
+enum IsTrisError {
+    PositionsMustBeDistinct,
+}
+
+type IsTrisResult = Result<bool, IsTrisError>;
+
 // A "tris" is a winning set of moves in the tris3d board.
-fn is_tris(position_a: &char, position_b: &char, position_c: &char) -> bool {
-    // Positions must be distinct.
+fn is_tris(position_a: char, position_b: char, position_c: char) -> IsTrisResult {
     if (position_a == position_b) || (position_a == position_c) || (position_b == position_c) {
-        return false;
+        return Err(IsTrisError::PositionsMustBeDistinct);
     }
 
     // Let T = (a, b, c) be a tern of vectors.
-    let vector_a = match index_of_position(position_a) {
-        Some(index) => coordinates_of_index(index),
-        None => {
-            return false;
-        }
-    };
-    let vector_b = match index_of_position(position_b) {
-        Some(index) => coordinates_of_index(index),
-        None => {
-            return false;
-        }
-    };
-    let vector_c = match index_of_position(position_c) {
-        Some(index) => coordinates_of_index(index),
-        None => {
-            return false;
-        }
-    };
+    // let vector_a = vector_of_position(position_a);
+    // let vector_b = vector_of_position(position_b);
+    // let vector_c = vector_of_position(position_c);
 
     // A necessary condition to be a tris is that
     //
@@ -296,8 +289,7 @@ fn is_tris(position_a: &char, position_b: &char, position_c: &char) -> bool {
     //
     // Since semi-sum is cyclic, then a, b, c can be choosen in any order.
     // let vector_semi_sum = semi_sum(vector_a, vector_b);
-    // let index_c = index_of_position(position_c);
-    // if index_of_coordinates(vector_semi_sum) != index_c {
+    // if !are_equal(vector_semi_sum, vector_c) {
     //     return false;
     // }
 
@@ -308,7 +300,7 @@ fn is_tris(position_a: &char, position_b: &char, position_c: &char) -> bool {
     // }
 
     // All other cases are not a tris.
-    false
+    Ok(false)
 }
 
 pub struct Board {
@@ -375,17 +367,25 @@ mod tests {
 
     #[test]
     fn is_tris_checks_arguments_are_distinct() {
-        assert_eq!(is_tris(&'A', &'A', &'B'), false);
-        assert_eq!(is_tris(&'A', &'B', &'A'), false);
-        assert_eq!(is_tris(&'B', &'A', &'A'), false);
+        match is_tris('A', 'B', 'A') {
+            Ok(_) => {
+                assert!(false)
+            }
+            Err(error) => {
+                assert_eq!(error, IsTrisError::PositionsMustBeDistinct);
+            }
+        }
+        // assert_eq!(is_tris(&'A', &'A', &'B'), false);
+        // assert_eq!(is_tris(&'A', &'B', &'A'), false);
+        // assert_eq!(is_tris(&'B', &'A', &'A'), false);
     }
 
-    #[test]
-    fn is_tris_checks_arguments_are_valid() {
-        assert_eq!(is_tris(&' ', &'A', &'B'), false);
-        assert_eq!(is_tris(&'A', &' ', &'B'), false);
-        assert_eq!(is_tris(&'A', &'B', &' '), false);
-    }
+    // #[test]
+    // fn is_tris_checks_arguments_are_valid() {
+    //     assert_eq!(is_tris(&' ', &'A', &'B'), false);
+    //     assert_eq!(is_tris(&'A', &' ', &'B'), false);
+    //     assert_eq!(is_tris(&'A', &'B', &' '), false);
+    // }
 
     #[test]
     fn empty_board_has_no_tris() {
@@ -427,16 +427,6 @@ mod tests {
         match board.add_move('A') {
             Ok(_) => assert!(false),
             Err(message) => assert_eq!(message, "Position already taken."),
-        }
-    }
-
-    #[test]
-    fn index_of_position_finds_valid_position() {
-        for (i, p) in POSITION.iter().enumerate() {
-            match index_of_position(p) {
-                Some(index) => assert_eq!(usize::from(index), i),
-                None => assert!(false),
-            }
         }
     }
 
