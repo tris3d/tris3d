@@ -1,8 +1,7 @@
-use crate::z3xz3xz3::{
-    are_equal, coordinates_of_index, index_of_coordinates, semi_sum, Z3xZ3xZ3Vector,
-};
+use crate::winning_combinations::get_is_winning_combination;
+use crate::z3xz3xz3::{are_equal, semi_sum, Z3xZ3xZ3Vector};
 
-// Every tris3d board cell is associated with an uppercase latin letter
+// Every board cell is associated with an uppercase latin letter
 // or the asterisc for the center. To enumerate cells, start from the center,
 // that is the '*' char. By convention the center of the cube has coordinates
 // `(1, 1, 1). Move in diagonal and label the cell as 'A'.
@@ -13,7 +12,7 @@ use crate::z3xz3xz3::{
 // this time the center is already taken. At the end do the same with
 // the last plane `z = 1`.
 //
-// This is the result of the tris3d board cell labelling.
+// This is the result of the board cell labelling.
 //
 // ```
 //            ______________________
@@ -105,213 +104,15 @@ static POSITION: [char; 27] = [
     'R', 'X', 'Y', 'S', 'Z', 'W', 'T', 'U', 'V', // Third layer, `z = 2`.
 ];
 
-fn vector_of_position(position: char) -> Option<Z3xZ3xZ3Vector> {
-    match position {
-        'A' => Some((0, 0, 0)),
-        'H' => Some((1, 0, 0)),
-        'G' => Some((2, 0, 0)),
-        'B' => Some((0, 1, 0)),
-        'I' => Some((1, 1, 0)),
-        'F' => Some((2, 1, 0)),
-        'C' => Some((0, 2, 0)),
-        'D' => Some((1, 2, 0)),
-        'E' => Some((2, 2, 0)),
-        'J' => Some((0, 0, 1)),
-        'Q' => Some((1, 0, 1)),
-        'P' => Some((2, 0, 1)),
-        'K' => Some((0, 1, 1)),
-        '*' => Some((1, 1, 1)),
-        'O' => Some((2, 1, 1)),
-        'L' => Some((0, 2, 1)),
-        'M' => Some((1, 2, 1)),
-        'N' => Some((2, 2, 1)),
-        'R' => Some((0, 0, 2)),
-        'X' => Some((1, 0, 2)),
-        'Y' => Some((2, 0, 2)),
-        'S' => Some((0, 1, 2)),
-        'Z' => Some((1, 1, 2)),
-        'W' => Some((2, 1, 2)),
-        'T' => Some((0, 2, 2)),
-        'U' => Some((1, 2, 2)),
-        'V' => Some((2, 2, 2)),
-        _ => None,
-    }
-}
-
-// There are 76 winning combinations in the tris3d board.
-//
-// Let's start with the combinations perpendicular to the x-axis.
-// Consider that the x coordinate is fixed at 0.
-//
-// The combination in the y-axis direction is:
-// ```
-// (0, 0) (1, 0) (2, 0)
-// ```
-
-// Its parallel combinations are:
-// ```
-// (0, 1) (1, 1) (2, 1)
-// (0, 2) (1, 2) (2, 2)
-// ```
-//
-// The combination in the z-axis direction is:
-// ```
-// (0, 0) (0, 1) (0, 2)
-// ```
-
-// Its parallel combinations are:
-// ```
-// (1, 0) (1, 1) (1, 2)
-// (2, 0) (2, 1) (2, 2)
-// ```
-//
-// Finally, the diagonals.
-// ```
-// (0, 0) (1, 1) (2, 2)
-// (0, 2) (1, 1) (2, 0)
-// ```
-//
-// So there are 8 combinations for each plane perpendicular to the x-axis.
-// That is 24 = 8 * 3.
-//
-// So there are 76 = 24 * 3 + 4 combinations,
-// considering the x, y and z-axis plus 4 comubinations on the cube diagonals.
-static WINNING_COMBINATIONS: [(Z3xZ3xZ3Vector, Z3xZ3xZ3Vector, Z3xZ3xZ3Vector); 76] = [
-    // Combinations perpendicular to the x-axis: first plane.
-    ((0, 0, 0), (0, 1, 0), (0, 2, 0)),
-    ((0, 0, 1), (0, 1, 1), (0, 2, 1)),
-    ((0, 0, 2), (0, 1, 2), (0, 2, 2)),
-    ((0, 0, 0), (0, 0, 1), (0, 0, 2)),
-    ((0, 1, 0), (0, 1, 1), (0, 1, 2)),
-    ((0, 2, 0), (0, 2, 1), (0, 2, 2)),
-    ((0, 0, 0), (0, 1, 1), (0, 2, 2)),
-    ((0, 0, 2), (0, 1, 1), (0, 2, 0)),
-    // Combinations perpendicular to the x-axis: second plane.
-    ((1, 0, 0), (1, 1, 0), (1, 2, 0)),
-    ((1, 0, 1), (1, 1, 1), (1, 2, 1)),
-    ((1, 0, 2), (1, 1, 2), (1, 2, 2)),
-    ((1, 0, 0), (1, 0, 1), (1, 0, 2)),
-    ((1, 1, 0), (1, 1, 1), (1, 1, 2)),
-    ((1, 2, 0), (1, 2, 1), (1, 2, 2)),
-    ((1, 0, 0), (1, 1, 1), (1, 2, 2)),
-    ((1, 0, 2), (1, 1, 1), (1, 2, 0)),
-    // Combinations perpendicular to the x-axis: third plane.
-    ((2, 0, 0), (2, 1, 0), (2, 2, 0)),
-    ((3, 0, 1), (2, 1, 1), (2, 2, 1)),
-    ((3, 0, 2), (2, 1, 2), (3, 2, 2)),
-    ((3, 0, 0), (2, 0, 1), (2, 0, 2)),
-    ((2, 1, 0), (2, 1, 1), (2, 1, 2)),
-    ((2, 2, 0), (3, 2, 1), (2, 2, 2)),
-    ((2, 0, 0), (3, 1, 1), (3, 2, 2)),
-    ((2, 0, 2), (2, 1, 1), (3, 2, 0)),
-    // Combinations perpendicular to the y-axis: first plane.
-    ((0, 0, 0), (1, 0, 0), (2, 0, 0)),
-    ((0, 0, 1), (1, 0, 1), (2, 0, 1)),
-    ((0, 0, 2), (1, 0, 2), (2, 0, 2)),
-    ((0, 0, 0), (0, 0, 1), (0, 0, 2)),
-    ((1, 0, 0), (1, 0, 1), (1, 0, 2)),
-    ((2, 0, 0), (2, 0, 1), (2, 0, 2)),
-    ((0, 0, 0), (1, 0, 1), (2, 0, 2)),
-    ((0, 0, 2), (1, 0, 1), (2, 0, 0)),
-    // Combinations perpendicular to the y-axis: second plane.
-    ((0, 1, 0), (1, 1, 0), (2, 1, 0)),
-    ((0, 1, 1), (1, 1, 1), (2, 1, 1)),
-    ((0, 1, 2), (1, 1, 2), (2, 1, 2)),
-    ((0, 1, 0), (0, 1, 1), (0, 1, 2)),
-    ((1, 1, 0), (1, 1, 1), (1, 1, 2)),
-    ((2, 1, 0), (2, 1, 1), (2, 1, 2)),
-    ((0, 1, 0), (1, 1, 1), (2, 1, 2)),
-    ((0, 1, 2), (1, 1, 1), (2, 1, 0)),
-    // Combinations perpendicular to the y-axis: third plane.
-    ((0, 2, 0), (1, 2, 0), (2, 2, 0)),
-    ((0, 2, 1), (1, 2, 1), (2, 2, 1)),
-    ((0, 2, 2), (1, 2, 2), (2, 2, 2)),
-    ((0, 2, 0), (0, 2, 1), (0, 2, 2)),
-    ((1, 2, 0), (1, 2, 1), (1, 2, 2)),
-    ((2, 2, 0), (2, 2, 1), (2, 2, 2)),
-    ((0, 2, 0), (1, 2, 1), (2, 2, 2)),
-    ((0, 2, 2), (1, 2, 1), (2, 2, 0)),
-    // Combinations perpendicular to the z-axis: first plane.
-    ((0, 0, 0), (1, 0, 0), (2, 0, 0)),
-    ((0, 1, 0), (1, 1, 0), (2, 1, 0)),
-    ((0, 2, 0), (1, 2, 0), (2, 2, 0)),
-    ((0, 0, 0), (0, 1, 0), (0, 2, 0)),
-    ((1, 0, 0), (1, 1, 0), (1, 2, 0)),
-    ((2, 0, 0), (2, 1, 0), (2, 2, 0)),
-    ((0, 0, 0), (1, 1, 0), (2, 2, 0)),
-    ((0, 2, 0), (1, 1, 0), (2, 0, 0)),
-    // Combinations perpendicular to the z-axis: second plane.
-    ((0, 0, 1), (1, 0, 1), (2, 0, 1)),
-    ((0, 1, 1), (1, 1, 1), (2, 1, 1)),
-    ((0, 2, 1), (1, 2, 1), (2, 2, 1)),
-    ((0, 0, 1), (0, 1, 1), (0, 2, 1)),
-    ((1, 0, 1), (1, 1, 1), (1, 2, 1)),
-    ((2, 0, 1), (2, 1, 1), (2, 2, 1)),
-    ((0, 0, 1), (1, 1, 1), (2, 2, 1)),
-    ((0, 2, 1), (1, 1, 1), (2, 0, 1)),
-    // Combinations perpendicular to the z-axis: third plane.
-    ((0, 0, 2), (1, 0, 2), (2, 0, 2)),
-    ((0, 1, 2), (1, 1, 2), (2, 1, 2)),
-    ((0, 2, 2), (1, 2, 2), (2, 2, 2)),
-    ((0, 0, 2), (0, 1, 2), (0, 2, 2)),
-    ((1, 0, 2), (1, 1, 2), (1, 2, 2)),
-    ((2, 0, 2), (2, 1, 2), (2, 2, 2)),
-    ((0, 0, 2), (1, 1, 2), (2, 2, 2)),
-    ((0, 2, 2), (1, 1, 2), (2, 0, 2)),
-    // Combinations on the cube diagonals.
-    ((0, 0, 0), (1, 1, 1), (2, 2, 2)),
-    ((2, 0, 0), (1, 1, 1), (0, 2, 2)),
-    ((2, 2, 0), (1, 1, 1), (0, 0, 2)),
-    ((0, 2, 0), (1, 1, 1), (2, 0, 2)),
-];
-
 #[derive(Debug, PartialEq)]
-enum IsTrisError {
-    InvalidPosition,
-    PositionsMustBeDistinct,
-}
-
-// A "tris" is a winning set of moves in the tris3d board.
-fn get_is_tris(position_a: char, position_b: char, position_c: char) -> Result<bool, IsTrisError> {
-    // Let T = (a, b, c) be a tern of vectors.
-    let vector_a = match vector_of_position(position_a) {
-        Some(vector) => vector,
-        None => return Err(IsTrisError::InvalidPosition),
-    };
-    let vector_b = match vector_of_position(position_b) {
-        Some(vector) => vector,
-        None => return Err(IsTrisError::InvalidPosition),
-    };
-    let vector_c = match vector_of_position(position_c) {
-        Some(vector) => vector,
-        None => return Err(IsTrisError::InvalidPosition),
-    };
-
-    if (position_a == position_b) || (position_a == position_c) || (position_b == position_c) {
-        return Err(IsTrisError::PositionsMustBeDistinct);
-    }
-
-    // A necessary condition to be a tris is that
-    //
-    //     semi-sum(a, b) = c
-    //
-    // Since semi-sum is cyclic, then a, b, c can be choosen in any order.
-    let vector_semi_sum = semi_sum(vector_a, vector_b);
-    if !are_equal(vector_semi_sum, vector_c) {
-        return Ok(false);
-    }
-
-    // Here the vectors are aligned.
-    // If any vector is the center then T is a tris.
-    if (position_a == '*') || (position_b == '*') || (position_c == '*') {
-        return Ok(true);
-    }
-
-    // All other cases are not a tris.
-    Ok(false)
+enum BoardStatus {
+    IsPlaying,
+    HasWinner,
+    Tie,
 }
 
 pub struct Board {
+    status: BoardStatus,
     moves: Vec<char>,
 }
 
@@ -326,20 +127,23 @@ pub enum BoardError {
 impl Board {
     /// Create an empty board.
     pub fn new() -> Self {
-        Self { moves: Vec::new() }
+        Self {
+            moves: Vec::new(),
+            status: BoardStatus::IsPlaying,
+        }
     }
 
     /// Add a move to the board.
     /// Return the number of winning combinations.
     pub fn add_move(&mut self, position: char) -> Result<u8, BoardError> {
-        if self.moves.len() == POSITION.len() {
+        if self.status == BoardStatus::Tie {
             return Err(BoardError::BoardIsFull);
+        }
+        if self.status == BoardStatus::HasWinner {
+            return Err(BoardError::ThereIsAlreadyAWinner);
         }
         if self.moves.contains(&position) {
             return Err(BoardError::PositionAlreadyTaken);
-        }
-        if self.get_num_tris() > 0 {
-            return Err(BoardError::ThereIsAlreadyAWinner);
         }
         let mut position_is_valid = false;
         for p in POSITION {
@@ -350,15 +154,27 @@ impl Board {
             }
         }
         if position_is_valid {
-            Ok(self.get_num_tris())
+            let num_winning_combinations = self.get_num_winning_combinations();
+            match num_winning_combinations {
+                0 => {
+                    if self.moves.len() == 27 {
+                        self.status = BoardStatus::Tie;
+                    }
+                    Ok(num_winning_combinations)
+                }
+                _ => {
+                    self.status = BoardStatus::HasWinner;
+                    Ok(num_winning_combinations)
+                }
+            }
         } else {
             Err(BoardError::InvalidPosition)
         }
     }
 
     /// Check if there is any winner.
-    pub fn get_num_tris(&self) -> u8 {
-        let mut num_tris = 0;
+    pub fn get_num_winning_combinations(&self) -> u8 {
+        let mut num_winning_combinations = 0;
         let num_moves = self.moves.len();
         // No player can win before the seventh move.
         if num_moves < 7 {
@@ -370,9 +186,9 @@ impl Board {
             for j in ((i + 3)..num_moves).step_by(3) {
                 for k in ((j + 3)..num_moves).step_by(3) {
                     println!("i, j, k {} {} {} ", i, j, k);
-                    match get_is_tris(self.moves[i], self.moves[j], self.moves[k]) {
-                        Ok(is_tris) => {
-                            num_tris += 1;
+                    match get_is_winning_combination(self.moves[i], self.moves[j], self.moves[k]) {
+                        Ok(_) => {
+                            num_winning_combinations += 1;
                         }
                         Err(_) => {}
                     }
@@ -380,7 +196,7 @@ impl Board {
             }
         }
 
-        num_tris
+        num_winning_combinations
     }
 }
 
@@ -395,76 +211,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn get_is_tris_checks_arguments_are_distinct() {
-        match get_is_tris('A', 'A', 'B') {
-            Ok(_) => {
-                assert!(false)
-            }
-            Err(error) => {
-                assert_eq!(error, IsTrisError::PositionsMustBeDistinct);
-            }
-        }
-        match get_is_tris('A', 'B', 'A') {
-            Ok(_) => {
-                assert!(false)
-            }
-            Err(error) => {
-                assert_eq!(error, IsTrisError::PositionsMustBeDistinct);
-            }
-        }
-        match get_is_tris('B', 'A', 'A') {
-            Ok(_) => {
-                assert!(false)
-            }
-            Err(error) => {
-                assert_eq!(error, IsTrisError::PositionsMustBeDistinct);
-            }
-        }
+    fn empty_board_has_no_winning_combination() {
+        assert_eq!(Board::new().get_num_winning_combinations(), 0);
     }
 
     #[test]
-    fn is_tris_checks_arguments_are_valid() {
-        match get_is_tris(' ', 'A', 'A') {
-            Ok(_) => {
-                assert!(false)
-            }
-            Err(error) => {
-                assert_eq!(error, IsTrisError::InvalidPosition);
-            }
-        }
-        match get_is_tris('A', ' ', 'A') {
-            Ok(_) => {
-                assert!(false)
-            }
-            Err(error) => {
-                assert_eq!(error, IsTrisError::InvalidPosition);
-            }
-        }
-        match get_is_tris('A', 'A', ' ') {
-            Ok(_) => {
-                assert!(false)
-            }
-            Err(error) => {
-                assert_eq!(error, IsTrisError::InvalidPosition);
-            }
-        }
-    }
-
-    #[test]
-    fn is_tris_works() {
-        match get_is_tris('A', '*', 'V') {
-            Ok(result) => {
-                assert_eq!(true, result)
-            }
-            Err(_) => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn empty_board_has_no_tris() {
-        assert_eq!(Board::new().get_num_tris(), 0);
+    fn empty_board_is_playing() {
+        assert_eq!(Board::new().status, BoardStatus::IsPlaying);
     }
 
     #[test]
@@ -501,47 +254,64 @@ mod tests {
     }
 
     #[test]
-    fn get_num_tris_works() {
+    fn get_num_winning_combinations_works() {
         assert_eq!(
             Board {
                 moves: vec!['A', 'H', 'G', '*', 'I', 'F', 'V'],
+                status: BoardStatus::IsPlaying,
             }
-            .get_num_tris(),
+            .get_num_winning_combinations(),
             1
         );
     }
+
+    // TODO
+    // #[test]
+    // fn board_can_be_full_with_no_winner() {
+    //     let mut board = Board::default();
+    //     board.add_move('*').unwrap();
+    //     board.add_move('A').unwrap();
+    //     board.add_move('B').unwrap();
+    //     board.add_move('C').unwrap();
+    //     board.add_move('D').unwrap();
+    //     board.add_move('E').unwrap();
+    //     board.add_move('F').unwrap();
+    //     board.add_move('G').unwrap();
+    //     board.add_move('H').unwrap();
+    //     board.add_move('I').unwrap();
+    //     board.add_move('J').unwrap();
+    //     board.add_move('K').unwrap();
+    //     board.add_move('L').unwrap();
+    //     board.add_move('M').unwrap();
+    //     board.add_move('N').unwrap();
+    //     board.add_move('O').unwrap();
+    //     board.add_move('P').unwrap();
+    //     board.add_move('Q').unwrap();
+    //     board.add_move('R').unwrap();
+    //     board.add_move('S').unwrap();
+    //     board.add_move('T').unwrap();
+    //     board.add_move('U').unwrap();
+    //     board.add_move('V').unwrap();
+    //     board.add_move('W').unwrap();
+    //     board.add_move('X').unwrap();
+    //     board.add_move('Y').unwrap();
+    //     board.add_move('Z').unwrap();
+    //     assert_eq!(board.status, BoardStatus::Tie);
+    //     assert_eq!(board.get_num_winning_combinations(), 0);
+    // }
 
     #[test]
     fn simple_game() {
         // Player one will move 'A', '*', 'V'.
         let mut board = Board::default();
-        match board.add_move('A') {
-            Ok(num_tris) => assert_eq!(num_tris, 0),
-            Err(_) => assert!(false),
-        }
-        match board.add_move('H') {
-            Ok(num_tris) => assert_eq!(num_tris, 0),
-            Err(_) => assert!(false),
-        }
-        match board.add_move('G') {
-            Ok(num_tris) => assert_eq!(num_tris, 0),
-            Err(_) => assert!(false),
-        }
-        match board.add_move('*') {
-            Ok(num_tris) => assert_eq!(num_tris, 0),
-            Err(_) => assert!(false),
-        }
-        match board.add_move('I') {
-            Ok(num_tris) => assert_eq!(num_tris, 0),
-            Err(_) => assert!(false),
-        }
-        match board.add_move('F') {
-            Ok(num_tris) => assert_eq!(num_tris, 0),
-            Err(_) => assert!(false),
-        }
-        match board.add_move('V') {
-            Ok(num_tris) => assert_eq!(num_tris, 1),
-            Err(_) => assert!(false),
-        }
+        board.add_move('A').unwrap();
+        board.add_move('H').unwrap();
+        board.add_move('G').unwrap();
+        board.add_move('*').unwrap();
+        board.add_move('I').unwrap();
+        board.add_move('F').unwrap();
+        board.add_move('V').unwrap();
+        assert_eq!(board.status, BoardStatus::HasWinner);
+        assert_eq!(board.get_num_winning_combinations(), 1);
     }
 }

@@ -10,5 +10,5 @@ fn play() {
     game.add_player(player_2).unwrap();
     game.add_player(player_3).unwrap();
 
-    assert_eq!(game.board.get_num_tris(), 0);
+    assert_eq!(game.board.get_num_winning_combinations(), 0);
 }

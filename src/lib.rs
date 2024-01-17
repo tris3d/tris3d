@@ -1,5 +1,6 @@
 mod board;
 mod game;
+mod winning_combinations;
 mod z3;
 mod z3xz3xz3;
 
