@@ -6,7 +6,7 @@ pub struct Game {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum GameError {
+pub enum Error {
     CannotAddMoreThanThreePlayers,
     CannotAddSamePlayerTwice,
 }
@@ -27,12 +27,12 @@ impl Game {
     /// let player_1 = String::from("Alice");
     /// game.add_player(player_1).unwrap();
     /// ```
-    pub fn add_player(&mut self, player_id: String) -> Result<(), GameError> {
+    pub fn add_player(&mut self, player_id: String) -> Result<(), Error> {
         if self.num_players() == 3 {
-            return Err(GameError::CannotAddMoreThanThreePlayers);
+            return Err(Error::CannotAddMoreThanThreePlayers);
         }
         if self.player_ids.contains(&player_id) {
-            return Err(GameError::CannotAddSamePlayerTwice);
+            return Err(Error::CannotAddSamePlayerTwice);
         }
         self.player_ids.push(player_id);
         Ok(())
@@ -86,7 +86,7 @@ mod tests {
         }
         match tris3d.add_player(same_player_id) {
             Ok(_) => assert!(false),
-            Err(error) => assert_eq!(error, GameError::CannotAddSamePlayerTwice),
+            Err(error) => assert_eq!(error, Error::CannotAddSamePlayerTwice),
         }
     }
 
@@ -107,7 +107,7 @@ mod tests {
         }
         match tris3d.add_player(String::from("player 4")) {
             Ok(_) => assert!(false),
-            Err(error) => assert_eq!(error, GameError::CannotAddMoreThanThreePlayers),
+            Err(error) => assert_eq!(error, Error::CannotAddMoreThanThreePlayers),
         }
     }
 }

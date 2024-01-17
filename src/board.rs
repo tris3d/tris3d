@@ -116,7 +116,7 @@ pub struct Board {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum BoardError {
+pub enum Error {
     BoardIsFull,
     InvalidPosition,
     PositionAlreadyTaken,
@@ -134,15 +134,15 @@ impl Board {
 
     /// Add a move to the board.
     /// Return the number of winning combinations.
-    pub fn add_move(&mut self, position: char) -> Result<u8, BoardError> {
+    pub fn add_move(&mut self, position: char) -> Result<u8, Error> {
         if self.status == BoardStatus::Tie {
-            return Err(BoardError::BoardIsFull);
+            return Err(Error::BoardIsFull);
         }
         if self.status == BoardStatus::HasWinner {
-            return Err(BoardError::ThereIsAlreadyAWinner);
+            return Err(Error::ThereIsAlreadyAWinner);
         }
         if self.moves.contains(&position) {
-            return Err(BoardError::PositionAlreadyTaken);
+            return Err(Error::PositionAlreadyTaken);
         }
         let mut position_is_valid = false;
         for p in POSITION {
@@ -154,20 +154,17 @@ impl Board {
         }
         if position_is_valid {
             let num_winning_combinations = self.get_num_winning_combinations();
-            match num_winning_combinations {
-                0 => {
-                    if self.moves.len() == 27 {
-                        self.status = BoardStatus::Tie;
-                    }
-                    Ok(num_winning_combinations)
+            if num_winning_combinations == 0 {
+                if self.moves.len() == 27 {
+                    self.status = BoardStatus::Tie;
                 }
-                _ => {
-                    self.status = BoardStatus::HasWinner;
-                    Ok(num_winning_combinations)
-                }
+                Ok(num_winning_combinations)
+            } else {
+                self.status = BoardStatus::HasWinner;
+                Ok(num_winning_combinations)
             }
         } else {
-            Err(BoardError::InvalidPosition)
+            Err(Error::InvalidPosition)
         }
     }
 
@@ -184,12 +181,10 @@ impl Board {
         for i in (current_player_index..num_moves).step_by(3) {
             for j in ((i + 3)..num_moves).step_by(3) {
                 for k in ((j + 3)..num_moves).step_by(3) {
-                    println!("i, j, k {} {} {} ", i, j, k);
-                    match get_is_winning_combination(self.moves[i], self.moves[j], self.moves[k]) {
-                        Ok(_) => {
-                            num_winning_combinations += 1;
-                        }
-                        Err(_) => {}
+                    if get_is_winning_combination(self.moves[i], self.moves[j], self.moves[k])
+                        .is_ok()
+                    {
+                        num_winning_combinations += 1;
                     }
                 }
             }
@@ -235,7 +230,7 @@ mod tests {
         let mut board = Board::new();
         match board.add_move(' ') {
             Ok(_) => assert!(false),
-            Err(error) => assert_eq!(error, BoardError::InvalidPosition),
+            Err(error) => assert_eq!(error, Error::InvalidPosition),
         }
     }
 
@@ -248,7 +243,7 @@ mod tests {
         }
         match board.add_move('A') {
             Ok(_) => assert!(false),
-            Err(error) => assert_eq!(error, BoardError::PositionAlreadyTaken),
+            Err(error) => assert_eq!(error, Error::PositionAlreadyTaken),
         }
     }
 
