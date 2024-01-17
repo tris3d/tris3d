@@ -4,6 +4,10 @@ use crate::z3;
 
 pub type Z3xZ3xZ3Vector = (u8, u8, u8);
 
+pub fn are_equal(a: Z3xZ3xZ3Vector, b: Z3xZ3xZ3Vector) -> bool {
+    (a.0 % 3 == b.0 % 3) && (a.1 % 3 == b.1 % 3) && (a.2 % 3 == b.2 % 3)
+}
+
 pub fn coordinates_of_index(index: u8) -> Z3xZ3xZ3Vector {
     (
         (index - (index % 9)) / 9,
@@ -34,6 +38,14 @@ pub fn semi_sum(a: Z3xZ3xZ3Vector, b: Z3xZ3xZ3Vector) -> Z3xZ3xZ3Vector {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn are_equal_works() {
+        assert_eq!(are_equal((0, 0, 0), (0, 0, 0)), true);
+        assert_eq!(are_equal((0, 0, 0), (1, 0, 0)), false);
+        assert_eq!(are_equal((0, 0, 0), (2, 0, 0)), false);
+        assert_eq!(are_equal((0, 0, 0), (3, 0, 0)), true);
+    }
 
     #[test]
     fn coordinates_of_index_works() {
