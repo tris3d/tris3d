@@ -105,7 +105,7 @@ static POSITION: [char; 27] = [
     'R', 'X', 'Y', 'S', 'Z', 'W', 'T', 'U', 'V', // Third layer, `z = 2`.
 ];
 
-fn vector_of_position(position: &char) -> Option<Z3xZ3xZ3Vector> {
+fn vector_of_position(position: char) -> Option<Z3xZ3xZ3Vector> {
     match position {
         'A' => Some((0, 0, 0)),
         'H' => Some((1, 0, 0)),
@@ -143,7 +143,7 @@ fn vector_of_position(position: &char) -> Option<Z3xZ3xZ3Vector> {
 // Let's start with the combinations perpendicular to the x-axis.
 // Consider that the x coordinate is fixed at 0.
 //
-// The comination in the y-axis direction is:
+// The combination in the y-axis direction is:
 // ```
 // (0, 0) (1, 0) (2, 0)
 // ```
@@ -154,7 +154,7 @@ fn vector_of_position(position: &char) -> Option<Z3xZ3xZ3Vector> {
 // (0, 2) (1, 2) (2, 2)
 // ```
 //
-// The comination in the z-axis direction is:
+// The combination in the z-axis direction is:
 // ```
 // (0, 0) (0, 1) (0, 2)
 // ```
@@ -267,37 +267,45 @@ static WINNING_COMBINATIONS: [(Z3xZ3xZ3Vector, Z3xZ3xZ3Vector, Z3xZ3xZ3Vector); 
 
 #[derive(Debug, PartialEq)]
 enum IsTrisError {
+    InvalidPosition,
     PositionsMustBeDistinct,
 }
 
-type IsTrisResult = Result<bool, IsTrisError>;
-
 // A "tris" is a winning set of moves in the tris3d board.
-fn is_tris(position_a: char, position_b: char, position_c: char) -> IsTrisResult {
+fn get_is_tris(position_a: char, position_b: char, position_c: char) -> Result<bool, IsTrisError> {
+    // Let T = (a, b, c) be a tern of vectors.
+    let vector_a = match vector_of_position(position_a) {
+        Some(vector) => vector,
+        None => return Err(IsTrisError::InvalidPosition),
+    };
+    let vector_b = match vector_of_position(position_b) {
+        Some(vector) => vector,
+        None => return Err(IsTrisError::InvalidPosition),
+    };
+    let vector_c = match vector_of_position(position_c) {
+        Some(vector) => vector,
+        None => return Err(IsTrisError::InvalidPosition),
+    };
+
     if (position_a == position_b) || (position_a == position_c) || (position_b == position_c) {
         return Err(IsTrisError::PositionsMustBeDistinct);
     }
-
-    // Let T = (a, b, c) be a tern of vectors.
-    // let vector_a = vector_of_position(position_a);
-    // let vector_b = vector_of_position(position_b);
-    // let vector_c = vector_of_position(position_c);
 
     // A necessary condition to be a tris is that
     //
     //     semi-sum(a, b) = c
     //
     // Since semi-sum is cyclic, then a, b, c can be choosen in any order.
-    // let vector_semi_sum = semi_sum(vector_a, vector_b);
-    // if !are_equal(vector_semi_sum, vector_c) {
-    //     return false;
-    // }
+    let vector_semi_sum = semi_sum(vector_a, vector_b);
+    if !are_equal(vector_semi_sum, vector_c) {
+        return Ok(false);
+    }
 
     // Here the vectors are aligned.
     // If any vector is the center then T is a tris.
-    // if (index_a == Some(13)) || (index_b == Some(13)) || (index_c == Some(13)) {
-    //     return true;
-    // }
+    if (position_a == '*') || (position_b == '*') || (position_c == '*') {
+        return Ok(true);
+    }
 
     // All other cases are not a tris.
     Ok(false)
@@ -305,6 +313,14 @@ fn is_tris(position_a: char, position_b: char, position_c: char) -> IsTrisResult
 
 pub struct Board {
     moves: Vec<char>,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum BoardError {
+    BoardIsFull,
+    InvalidPosition,
+    PositionAlreadyTaken,
+    ThereIsAlreadyAWinner,
 }
 
 impl Board {
@@ -315,15 +331,15 @@ impl Board {
 
     /// Add a move to the board.
     /// Return the number of winning combinations.
-    pub fn add_move(&mut self, position: char) -> Result<u8, &str> {
-        if self.get_num_tris() > 0 {
-            return Err("Game over, there is already a winner.");
-        }
+    pub fn add_move(&mut self, position: char) -> Result<u8, BoardError> {
         if self.moves.len() == POSITION.len() {
-            return Err("Board is full.");
+            return Err(BoardError::BoardIsFull);
         }
         if self.moves.contains(&position) {
-            return Err("Position already taken.");
+            return Err(BoardError::PositionAlreadyTaken);
+        }
+        if self.get_num_tris() > 0 {
+            return Err(BoardError::ThereIsAlreadyAWinner);
         }
         let mut position_is_valid = false;
         for p in POSITION {
@@ -336,22 +352,35 @@ impl Board {
         if position_is_valid {
             Ok(self.get_num_tris())
         } else {
-            Err("Position is not valid.")
+            Err(BoardError::InvalidPosition)
         }
     }
 
     /// Check if there is any winner.
     pub fn get_num_tris(&self) -> u8 {
+        let mut num_tris = 0;
+        let num_moves = self.moves.len();
         // No player can win before the seventh move.
-        if self.moves.len() < 7 {
+        if num_moves < 7 {
             return 0;
         }
+        // Get all combinations of current player and count how many are winning combinations.
+        let current_player_index = (num_moves - 1) % 3;
+        for i in (current_player_index..num_moves).step_by(3) {
+            for j in ((i + 3)..num_moves).step_by(3) {
+                for k in ((j + 3)..num_moves).step_by(3) {
+                    println!("i, j, k {} {} {} ", i, j, k);
+                    match get_is_tris(self.moves[i], self.moves[j], self.moves[k]) {
+                        Ok(is_tris) => {
+                            num_tris += 1;
+                        }
+                        Err(_) => {}
+                    }
+                }
+            }
+        }
 
-        1
-    }
-
-    pub fn next_player_index(self) -> usize {
-        self.moves.len() % 3
+        num_tris
     }
 }
 
@@ -366,8 +395,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn is_tris_checks_arguments_are_distinct() {
-        match is_tris('A', 'B', 'A') {
+    fn get_is_tris_checks_arguments_are_distinct() {
+        match get_is_tris('A', 'A', 'B') {
             Ok(_) => {
                 assert!(false)
             }
@@ -375,26 +404,67 @@ mod tests {
                 assert_eq!(error, IsTrisError::PositionsMustBeDistinct);
             }
         }
-        // assert_eq!(is_tris(&'A', &'A', &'B'), false);
-        // assert_eq!(is_tris(&'A', &'B', &'A'), false);
-        // assert_eq!(is_tris(&'B', &'A', &'A'), false);
+        match get_is_tris('A', 'B', 'A') {
+            Ok(_) => {
+                assert!(false)
+            }
+            Err(error) => {
+                assert_eq!(error, IsTrisError::PositionsMustBeDistinct);
+            }
+        }
+        match get_is_tris('B', 'A', 'A') {
+            Ok(_) => {
+                assert!(false)
+            }
+            Err(error) => {
+                assert_eq!(error, IsTrisError::PositionsMustBeDistinct);
+            }
+        }
     }
 
-    // #[test]
-    // fn is_tris_checks_arguments_are_valid() {
-    //     assert_eq!(is_tris(&' ', &'A', &'B'), false);
-    //     assert_eq!(is_tris(&'A', &' ', &'B'), false);
-    //     assert_eq!(is_tris(&'A', &'B', &' '), false);
-    // }
+    #[test]
+    fn is_tris_checks_arguments_are_valid() {
+        match get_is_tris(' ', 'A', 'A') {
+            Ok(_) => {
+                assert!(false)
+            }
+            Err(error) => {
+                assert_eq!(error, IsTrisError::InvalidPosition);
+            }
+        }
+        match get_is_tris('A', ' ', 'A') {
+            Ok(_) => {
+                assert!(false)
+            }
+            Err(error) => {
+                assert_eq!(error, IsTrisError::InvalidPosition);
+            }
+        }
+        match get_is_tris('A', 'A', ' ') {
+            Ok(_) => {
+                assert!(false)
+            }
+            Err(error) => {
+                assert_eq!(error, IsTrisError::InvalidPosition);
+            }
+        }
+    }
+
+    #[test]
+    fn is_tris_works() {
+        match get_is_tris('A', '*', 'V') {
+            Ok(result) => {
+                assert_eq!(true, result)
+            }
+            Err(_) => {
+                assert!(false)
+            }
+        }
+    }
 
     #[test]
     fn empty_board_has_no_tris() {
         assert_eq!(Board::new().get_num_tris(), 0);
-    }
-
-    #[test]
-    fn empty_board_next_player_index() {
-        assert_eq!(Board::new().next_player_index(), 0);
     }
 
     #[test]
@@ -413,7 +483,7 @@ mod tests {
         let mut board = Board::new();
         match board.add_move(' ') {
             Ok(_) => assert!(false),
-            Err(message) => assert_eq!(message, "Position is not valid."),
+            Err(error) => assert_eq!(error, BoardError::InvalidPosition),
         }
     }
 
@@ -426,13 +496,24 @@ mod tests {
         }
         match board.add_move('A') {
             Ok(_) => assert!(false),
-            Err(message) => assert_eq!(message, "Position already taken."),
+            Err(error) => assert_eq!(error, BoardError::PositionAlreadyTaken),
         }
     }
 
     #[test]
+    fn get_num_tris_works() {
+        assert_eq!(
+            Board {
+                moves: vec!['A', 'H', 'G', '*', 'I', 'F', 'V'],
+            }
+            .get_num_tris(),
+            1
+        );
+    }
+
+    #[test]
     fn simple_game() {
-        // Player one will move 'A', 'B', 'C'.
+        // Player one will move 'A', '*', 'V'.
         let mut board = Board::default();
         match board.add_move('A') {
             Ok(num_tris) => assert_eq!(num_tris, 0),
@@ -446,7 +527,7 @@ mod tests {
             Ok(num_tris) => assert_eq!(num_tris, 0),
             Err(_) => assert!(false),
         }
-        match board.add_move('B') {
+        match board.add_move('*') {
             Ok(num_tris) => assert_eq!(num_tris, 0),
             Err(_) => assert!(false),
         }
@@ -458,7 +539,7 @@ mod tests {
             Ok(num_tris) => assert_eq!(num_tris, 0),
             Err(_) => assert!(false),
         }
-        match board.add_move('C') {
+        match board.add_move('V') {
             Ok(num_tris) => assert_eq!(num_tris, 1),
             Err(_) => assert!(false),
         }
