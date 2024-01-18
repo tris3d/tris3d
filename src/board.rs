@@ -97,7 +97,7 @@ use crate::winning_combinations::get_is_winning_combination;
 // ```
 // x, y, z -> x * 9 + y * 3 + z
 // ```
-static POSITION: [char; 27] = [
+pub static POSITION: [char; 27] = [
     'A', 'H', 'G', 'B', 'I', 'F', 'C', 'D', 'E', // First layer, `z = 0`.
     'J', 'Q', 'P', 'K', '*', 'O', 'L', 'M', 'N', // Second layer, `z = 1`.
     'R', 'X', 'Y', 'S', 'Z', 'W', 'T', 'U', 'V', // Third layer, `z = 2`.
