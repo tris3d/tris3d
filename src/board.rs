@@ -105,14 +105,14 @@ pub static POSITION: [char; 27] = [
 ];
 
 #[derive(Debug, PartialEq)]
-pub enum BoardStatus {
+pub enum Status {
     IsPlaying,
     HasWinner,
     Tie,
 }
 
 pub struct Board {
-    pub status: BoardStatus,
+    pub status: Status,
     moves: Vec<char>,
 }
 
@@ -121,17 +121,17 @@ impl Board {
     pub fn new() -> Self {
         Self {
             moves: Vec::new(),
-            status: BoardStatus::IsPlaying,
+            status: Status::IsPlaying,
         }
     }
 
     /// Add a move to the board.
     /// Return the number of winning combinations.
     pub fn add_move(&mut self, position: char) -> Result<u8, Error> {
-        if self.status == BoardStatus::Tie {
+        if self.status == Status::Tie {
             return Err(Error::BoardIsFull);
         }
-        if self.status == BoardStatus::HasWinner {
+        if self.status == Status::HasWinner {
             return Err(Error::ThereIsAlreadyAWinner);
         }
         if self.moves.contains(&position) {
@@ -149,11 +149,11 @@ impl Board {
             let num_winning_combinations = self.get_num_winning_combinations();
             if num_winning_combinations == 0 {
                 if self.moves.len() == 27 {
-                    self.status = BoardStatus::Tie;
+                    self.status = Status::Tie;
                 }
                 Ok(num_winning_combinations)
             } else {
-                self.status = BoardStatus::HasWinner;
+                self.status = Status::HasWinner;
                 Ok(num_winning_combinations)
             }
         } else {
@@ -204,7 +204,7 @@ mod tests {
 
     #[test]
     fn empty_board_is_playing() {
-        assert_eq!(Board::new().status, BoardStatus::IsPlaying);
+        assert_eq!(Board::new().status, Status::IsPlaying);
     }
 
     #[test]
@@ -245,7 +245,7 @@ mod tests {
         assert_eq!(
             Board {
                 moves: vec!['A', 'H', 'G', '*', 'I', 'F', 'V'],
-                status: BoardStatus::IsPlaying,
+                status: Status::IsPlaying,
             }
             .get_num_winning_combinations(),
             1
@@ -255,35 +255,14 @@ mod tests {
     #[test]
     fn board_can_be_full_with_no_winner() {
         let mut board = Board::default();
-        board.add_move('*').unwrap();
         board.add_move('A').unwrap();
-        board.add_move('B').unwrap();
+        board.add_move('I').unwrap();
+        board.add_move('E').unwrap();
+        board.add_move('H').unwrap();
+        board.add_move('G').unwrap();
+        board.add_move('D').unwrap();
         // TODO
-        // board.add_move('C').unwrap();
-        // board.add_move('D').unwrap();
-        // board.add_move('E').unwrap();
-        // board.add_move('F').unwrap();
-        // board.add_move('G').unwrap();
-        // board.add_move('H').unwrap();
-        // board.add_move('I').unwrap();
-        // board.add_move('J').unwrap();
-        // board.add_move('K').unwrap();
-        // board.add_move('L').unwrap();
-        // board.add_move('M').unwrap();
-        // board.add_move('N').unwrap();
-        // board.add_move('O').unwrap();
-        // board.add_move('P').unwrap();
-        // board.add_move('Q').unwrap();
-        // board.add_move('R').unwrap();
-        // board.add_move('S').unwrap();
-        // board.add_move('T').unwrap();
-        // board.add_move('U').unwrap();
-        // board.add_move('V').unwrap();
-        // board.add_move('W').unwrap();
-        // board.add_move('X').unwrap();
-        // board.add_move('Y').unwrap();
-        // board.add_move('Z').unwrap();
-        // assert_eq!(board.status, BoardStatus::Tie);
+        // assert_eq!(board.status, Status::Tie);
         assert_eq!(board.get_num_winning_combinations(), 0);
     }
 
@@ -298,7 +277,7 @@ mod tests {
         board.add_move('I').unwrap();
         board.add_move('F').unwrap();
         board.add_move('V').unwrap();
-        assert_eq!(board.status, BoardStatus::HasWinner);
+        assert_eq!(board.status, Status::HasWinner);
         assert_eq!(board.get_num_winning_combinations(), 1);
     }
 }

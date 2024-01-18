@@ -1,6 +1,6 @@
 mod board;
 mod errors;
-mod game;
+pub mod game;
 mod winning_combinations;
 mod z3;
 mod z3xz3xz3;

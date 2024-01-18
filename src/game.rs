@@ -1,8 +1,8 @@
-use crate::board::{Board, BoardStatus};
+use crate::board::{Board, Status as BoardStatus};
 use crate::errors::Error;
 
 #[derive(Debug, PartialEq)]
-enum GameStatus {
+pub enum Status {
     WaitingForPlayers,
     IsPlaying,
     IsOver,
@@ -11,7 +11,7 @@ enum GameStatus {
 pub struct Game {
     board: Board,
     player_ids: Vec<String>,
-    status: GameStatus,
+    pub status: Status,
 }
 
 impl Game {
@@ -20,7 +20,7 @@ impl Game {
         Self {
             board: Board::new(),
             player_ids: Vec::new(),
-            status: GameStatus::WaitingForPlayers,
+            status: Status::WaitingForPlayers,
         }
     }
 
@@ -39,7 +39,7 @@ impl Game {
         }
         self.player_ids.push(player_id);
         if self.num_players() == 3 {
-            self.status = GameStatus::IsPlaying;
+            self.status = Status::IsPlaying;
         }
         Ok(())
     }
@@ -55,16 +55,24 @@ impl Game {
     /// let num_winning_combinations = game.add_move(String::from("Alice"), 'A').unwrap();
     /// ```
     pub fn add_move(&mut self, player_id: String, position: char) -> Result<u8, Error> {
-        if self.status == GameStatus::WaitingForPlayers {
+        if self.status == Status::WaitingForPlayers {
             return Err(Error::GameNotStartedYet);
         }
-        if self.board.status != BoardStatus::IsPlaying {
+        if self.status == Status::IsOver {
             return Err(Error::GameIsOver);
         }
         if !self.player_ids.contains(&player_id) {
             return Err(Error::PlayerNotFound);
         }
-        self.board.add_move(position)
+        match self.board.add_move(position) {
+            Ok(num) => {
+                if self.board.status != BoardStatus::IsPlaying {
+                    self.status = Status::IsOver;
+                }
+                return Ok(num);
+            }
+            Err(error) => return Err(error),
+        }
     }
 
     pub fn num_players(&self) -> usize {
@@ -85,7 +93,7 @@ mod tests {
     #[test]
     fn new_game_is_waiting_for_players() {
         assert_eq!(Game::new().num_players(), 0);
-        assert_eq!(Game::new().status, GameStatus::WaitingForPlayers);
+        assert_eq!(Game::new().status, Status::WaitingForPlayers);
     }
 
     #[test]
