@@ -637,15 +637,7 @@ mod tests {
     }
 
     #[test]
-    fn get_is_winning_combination_works() {
-        match get_is_winning_combination('A', '*', 'V') {
-            Ok(result) => {
-                assert_eq!(true, result)
-            }
-            Err(_) => {
-                assert!(false)
-            }
-        }
+    fn get_is_winning_combination_works_with_winning_combinations() {
         for (vector1, vector2, vector3) in WINNING_COMBINATIONS {
             let position_1 = position_of_vector(vector1).unwrap();
             let position_2 = position_of_vector(vector2).unwrap();
@@ -653,6 +645,45 @@ mod tests {
             match get_is_winning_combination(position_1, position_2, position_3) {
                 Ok(result) => {
                     assert_eq!(true, result)
+                }
+                Err(_) => {
+                    assert!(false)
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn get_is_winning_combination_works_with_combinations_passing_through_center() {
+        for (position_1, position_2, position_3) in [
+            // All terns with 'A' and '*', except the winning combination ('A', '*', 'V').
+            ('A', '*', 'B'),
+            ('A', '*', 'C'),
+            ('A', '*', 'D'),
+            ('A', '*', 'E'),
+            ('A', '*', 'F'),
+            ('A', '*', 'G'),
+            ('A', '*', 'H'),
+            ('A', '*', 'J'),
+            ('A', '*', 'K'),
+            ('A', '*', 'L'),
+            ('A', '*', 'M'),
+            ('A', '*', 'N'),
+            ('A', '*', 'O'),
+            ('A', '*', 'P'),
+            ('A', '*', 'Q'),
+            ('A', '*', 'R'),
+            ('A', '*', 'S'),
+            ('A', '*', 'T'),
+            ('A', '*', 'U'),
+            ('A', '*', 'W'),
+            ('A', '*', 'Y'),
+            ('A', '*', 'X'),
+            ('A', '*', 'Z'),
+        ] {
+            match get_is_winning_combination(position_1, position_2, position_3) {
+                Ok(result) => {
+                    assert_eq!(false, result)
                 }
                 Err(_) => {
                     assert!(false)

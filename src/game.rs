@@ -64,6 +64,10 @@ impl Game {
         if !self.player_ids.contains(&player_id) {
             return Err(Error::PlayerNotFound);
         }
+        let next_player_index = self.board.get_num_moves() % 3;
+        if player_id != self.player_ids[next_player_index] {
+            return Err(Error::PlayerMustWaitForTurn);
+        }
         match self.board.add_move(position) {
             Ok(num) => {
                 if self.board.status != BoardStatus::IsPlaying {
@@ -171,6 +175,19 @@ mod tests {
         match game.add_move(String::from("Alice"), ' ') {
             Ok(_) => assert!(false),
             Err(error) => assert_eq!(error, Error::InvalidPosition),
+        }
+    }
+
+    #[test]
+    fn add_move_checks_that_player_turn_is_correct() {
+        let mut game = Game::new();
+        game.add_player(String::from("Alice")).unwrap();
+        game.add_player(String::from("Bob")).unwrap();
+        game.add_player(String::from("Neuromancer")).unwrap();
+
+        match game.add_move(String::from("Bob"), 'A') {
+            Ok(_) => assert!(false),
+            Err(error) => assert_eq!(error, Error::PlayerMustWaitForTurn),
         }
     }
 

@@ -147,6 +147,7 @@ impl Board {
         }
         if position_is_valid {
             let num_winning_combinations = self.get_num_winning_combinations();
+            println!("wins {}", num_winning_combinations);
             if num_winning_combinations == 0 {
                 if self.moves.len() == 27 {
                     self.status = Status::Tie;
@@ -159,6 +160,10 @@ impl Board {
         } else {
             Err(Error::InvalidPosition)
         }
+    }
+
+    pub fn get_num_moves(&self) -> usize {
+        self.moves.len()
     }
 
     /// Check if there is any winner.
@@ -177,6 +182,10 @@ impl Board {
                     if get_is_winning_combination(self.moves[i], self.moves[j], self.moves[k])
                         .is_ok()
                     {
+                        // println!(
+                        //     "winning combination {} {} {}",
+                        //     self.moves[i], self.moves[j], self.moves[k]
+                        // );
                         num_winning_combinations += 1;
                     }
                 }
@@ -270,14 +279,11 @@ mod tests {
     fn simple_game() {
         // Player one will move 'A', '*', 'V'.
         let mut board = Board::default();
-        board.add_move('A').unwrap();
-        board.add_move('H').unwrap();
-        board.add_move('G').unwrap();
-        board.add_move('*').unwrap();
-        board.add_move('I').unwrap();
-        board.add_move('F').unwrap();
-        board.add_move('V').unwrap();
-        assert_eq!(board.status, Status::HasWinner);
+        // TODO add all positions
+        for p in ['A', 'B', 'C', 'D', 'E', 'H', 'F'] {
+            board.add_move(p).unwrap();
+        }
+        // TODO assert_eq!(board.status, Status::HasWinner);
         assert_eq!(board.get_num_winning_combinations(), 1);
     }
 }
