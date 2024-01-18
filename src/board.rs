@@ -147,7 +147,6 @@ impl Board {
         }
         if position_is_valid {
             let num_winning_combinations = self.get_num_winning_combinations();
-            println!("wins {}", num_winning_combinations);
             if num_winning_combinations == 0 {
                 if self.moves.len() == 27 {
                     self.status = Status::Tie;

@@ -73,9 +73,9 @@ impl Game {
                 if self.board.status != BoardStatus::IsPlaying {
                     self.status = Status::IsOver;
                 }
-                return Ok(num);
+                Ok(num)
             }
-            Err(error) => return Err(error),
+            Err(error) => Err(error),
         }
     }
 
