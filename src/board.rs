@@ -1,3 +1,4 @@
+use crate::errors::Error;
 use crate::winning_combinations::get_is_winning_combination;
 
 // Every board cell is associated with an uppercase latin letter
@@ -104,23 +105,15 @@ pub static POSITION: [char; 27] = [
 ];
 
 #[derive(Debug, PartialEq)]
-enum BoardStatus {
+pub enum BoardStatus {
     IsPlaying,
     HasWinner,
     Tie,
 }
 
 pub struct Board {
-    status: BoardStatus,
+    pub status: BoardStatus,
     moves: Vec<char>,
-}
-
-#[derive(Debug, PartialEq)]
-pub enum Error {
-    BoardIsFull,
-    InvalidPosition,
-    PositionAlreadyTaken,
-    ThereIsAlreadyAWinner,
 }
 
 impl Board {
@@ -259,40 +252,40 @@ mod tests {
         );
     }
 
-    // TODO
-    // #[test]
-    // fn board_can_be_full_with_no_winner() {
-    //     let mut board = Board::default();
-    //     board.add_move('*').unwrap();
-    //     board.add_move('A').unwrap();
-    //     board.add_move('B').unwrap();
-    //     board.add_move('C').unwrap();
-    //     board.add_move('D').unwrap();
-    //     board.add_move('E').unwrap();
-    //     board.add_move('F').unwrap();
-    //     board.add_move('G').unwrap();
-    //     board.add_move('H').unwrap();
-    //     board.add_move('I').unwrap();
-    //     board.add_move('J').unwrap();
-    //     board.add_move('K').unwrap();
-    //     board.add_move('L').unwrap();
-    //     board.add_move('M').unwrap();
-    //     board.add_move('N').unwrap();
-    //     board.add_move('O').unwrap();
-    //     board.add_move('P').unwrap();
-    //     board.add_move('Q').unwrap();
-    //     board.add_move('R').unwrap();
-    //     board.add_move('S').unwrap();
-    //     board.add_move('T').unwrap();
-    //     board.add_move('U').unwrap();
-    //     board.add_move('V').unwrap();
-    //     board.add_move('W').unwrap();
-    //     board.add_move('X').unwrap();
-    //     board.add_move('Y').unwrap();
-    //     board.add_move('Z').unwrap();
-    //     assert_eq!(board.status, BoardStatus::Tie);
-    //     assert_eq!(board.get_num_winning_combinations(), 0);
-    // }
+    #[test]
+    fn board_can_be_full_with_no_winner() {
+        let mut board = Board::default();
+        board.add_move('*').unwrap();
+        board.add_move('A').unwrap();
+        board.add_move('B').unwrap();
+        // TODO
+        // board.add_move('C').unwrap();
+        // board.add_move('D').unwrap();
+        // board.add_move('E').unwrap();
+        // board.add_move('F').unwrap();
+        // board.add_move('G').unwrap();
+        // board.add_move('H').unwrap();
+        // board.add_move('I').unwrap();
+        // board.add_move('J').unwrap();
+        // board.add_move('K').unwrap();
+        // board.add_move('L').unwrap();
+        // board.add_move('M').unwrap();
+        // board.add_move('N').unwrap();
+        // board.add_move('O').unwrap();
+        // board.add_move('P').unwrap();
+        // board.add_move('Q').unwrap();
+        // board.add_move('R').unwrap();
+        // board.add_move('S').unwrap();
+        // board.add_move('T').unwrap();
+        // board.add_move('U').unwrap();
+        // board.add_move('V').unwrap();
+        // board.add_move('W').unwrap();
+        // board.add_move('X').unwrap();
+        // board.add_move('Y').unwrap();
+        // board.add_move('Z').unwrap();
+        // assert_eq!(board.status, BoardStatus::Tie);
+        assert_eq!(board.get_num_winning_combinations(), 0);
+    }
 
     #[test]
     fn simple_game() {

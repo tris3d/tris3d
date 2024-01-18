@@ -1,4 +1,4 @@
-use crate::board::POSITION;
+use crate::errors::Error;
 use crate::z3xz3xz3::{are_equal, semi_sum, Z3xZ3xZ3Vector};
 
 fn vector_of_position(position: char) -> Option<Z3xZ3xZ3Vector> {
@@ -34,30 +34,24 @@ fn vector_of_position(position: char) -> Option<Z3xZ3xZ3Vector> {
     }
 }
 
-#[derive(Debug, PartialEq)]
-pub enum GetIsWinningCombinationError {
-    InvalidPosition,
-    PositionsMustBeDistinct,
-}
-
 pub fn get_is_winning_combination(
     position_a: char,
     position_b: char,
     position_c: char,
-) -> Result<bool, GetIsWinningCombinationError> {
+) -> Result<bool, Error> {
     // Let T = (A, B, C) be a tern of vectors.
     let Some(vector_a) = vector_of_position(position_a) else {
-        return Err(GetIsWinningCombinationError::InvalidPosition);
+        return Err(Error::InvalidPosition);
     };
     let Some(vector_b) = vector_of_position(position_b) else {
-        return Err(GetIsWinningCombinationError::InvalidPosition);
+        return Err(Error::InvalidPosition);
     };
     let Some(vector_c) = vector_of_position(position_c) else {
-        return Err(GetIsWinningCombinationError::InvalidPosition);
+        return Err(Error::InvalidPosition);
     };
 
     if (position_a == position_b) || (position_a == position_c) || (position_b == position_c) {
-        return Err(GetIsWinningCombinationError::PositionsMustBeDistinct);
+        return Err(Error::PositionsMustBeDistinct);
     }
 
     // A necessary condition to be a winning combination is that
@@ -219,13 +213,13 @@ mod tests {
         ((1, 0, 2), (1, 1, 1), (1, 2, 0)),
         // Combinations perpendicular to the x-axis: third plane.
         ((2, 0, 0), (2, 1, 0), (2, 2, 0)),
-        ((3, 0, 1), (2, 1, 1), (2, 2, 1)),
-        ((3, 0, 2), (2, 1, 2), (3, 2, 2)),
-        ((3, 0, 0), (2, 0, 1), (2, 0, 2)),
+        ((2, 0, 1), (2, 1, 1), (2, 2, 1)),
+        ((2, 0, 2), (2, 1, 2), (2, 2, 2)),
+        ((2, 0, 0), (2, 0, 1), (2, 0, 2)),
         ((2, 1, 0), (2, 1, 1), (2, 1, 2)),
-        ((2, 2, 0), (3, 2, 1), (2, 2, 2)),
-        ((2, 0, 0), (3, 1, 1), (3, 2, 2)),
-        ((2, 0, 2), (2, 1, 1), (3, 2, 0)),
+        ((2, 2, 0), (2, 2, 1), (2, 2, 2)),
+        ((2, 0, 0), (2, 1, 1), (2, 2, 2)),
+        ((2, 0, 2), (2, 1, 1), (2, 2, 0)),
         // Combinations perpendicular to the y-axis: first plane.
         ((0, 0, 0), (1, 0, 0), (2, 0, 0)),
         ((0, 0, 1), (1, 0, 1), (2, 0, 1)),
@@ -578,7 +572,7 @@ mod tests {
 
     #[test]
     fn position_of_vector_is_inverse_of_vector_of_position() {
-        for position in POSITION {
+        for position in crate::board::POSITION {
             assert_eq!(
                 position,
                 position_of_vector(vector_of_position(position).unwrap()).unwrap()
@@ -593,7 +587,7 @@ mod tests {
                 assert!(false)
             }
             Err(error) => {
-                assert_eq!(error, GetIsWinningCombinationError::PositionsMustBeDistinct);
+                assert_eq!(error, Error::PositionsMustBeDistinct);
             }
         }
         match get_is_winning_combination('A', 'B', 'A') {
@@ -601,7 +595,7 @@ mod tests {
                 assert!(false)
             }
             Err(error) => {
-                assert_eq!(error, GetIsWinningCombinationError::PositionsMustBeDistinct);
+                assert_eq!(error, Error::PositionsMustBeDistinct);
             }
         }
         match get_is_winning_combination('B', 'A', 'A') {
@@ -609,7 +603,7 @@ mod tests {
                 assert!(false)
             }
             Err(error) => {
-                assert_eq!(error, GetIsWinningCombinationError::PositionsMustBeDistinct);
+                assert_eq!(error, Error::PositionsMustBeDistinct);
             }
         }
     }
@@ -621,7 +615,7 @@ mod tests {
                 assert!(false)
             }
             Err(error) => {
-                assert_eq!(error, GetIsWinningCombinationError::InvalidPosition);
+                assert_eq!(error, Error::InvalidPosition);
             }
         }
         match get_is_winning_combination('A', ' ', 'A') {
@@ -629,7 +623,7 @@ mod tests {
                 assert!(false)
             }
             Err(error) => {
-                assert_eq!(error, GetIsWinningCombinationError::InvalidPosition);
+                assert_eq!(error, Error::InvalidPosition);
             }
         }
         match get_is_winning_combination('A', 'A', ' ') {
@@ -637,34 +631,33 @@ mod tests {
                 assert!(false)
             }
             Err(error) => {
-                assert_eq!(error, GetIsWinningCombinationError::InvalidPosition);
+                assert_eq!(error, Error::InvalidPosition);
             }
         }
     }
 
-    // #[test]
-    // fn get_is_winning_combination_works() {
-    //     match get_is_winning_combination('A', '*', 'V') {
-    //         Ok(result) => {
-    //             assert_eq!(true, result)
-    //         }
-    //         Err(_) => {
-    //             assert!(false)
-    //         }
-    //     }
-    //     for (vector1, vector2, vector3) in WINNING_COMBINATIONS {
-    //         let position_1 = position_of_vector(vector1).unwrap();
-    //         let position_2 = position_of_vector(vector2).unwrap();
-    //         let position_3 = position_of_vector(vector3).unwrap();
-    //         println!("{} {} {}", position_1, position_2, position_3);
-    //         match get_is_winning_combination(position_1, position_2, position_3) {
-    //             Ok(result) => {
-    //                 assert_eq!(true, result)
-    //             }
-    //             Err(_) => {
-    //                 assert!(false)
-    //             }
-    //         }
-    //     }
-    // }
+    #[test]
+    fn get_is_winning_combination_works() {
+        match get_is_winning_combination('A', '*', 'V') {
+            Ok(result) => {
+                assert_eq!(true, result)
+            }
+            Err(_) => {
+                assert!(false)
+            }
+        }
+        for (vector1, vector2, vector3) in WINNING_COMBINATIONS {
+            let position_1 = position_of_vector(vector1).unwrap();
+            let position_2 = position_of_vector(vector2).unwrap();
+            let position_3 = position_of_vector(vector3).unwrap();
+            match get_is_winning_combination(position_1, position_2, position_3) {
+                Ok(result) => {
+                    assert_eq!(true, result)
+                }
+                Err(_) => {
+                    assert!(false)
+                }
+            }
+        }
+    }
 }
