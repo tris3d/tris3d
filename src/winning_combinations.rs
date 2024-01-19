@@ -153,6 +153,7 @@ pub fn get_is_winning_combination(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::board::POSITION;
 
     // There are 76 winning combinations in the board.
     //
@@ -352,227 +353,42 @@ mod tests {
 
     #[test]
     fn position_of_vector_works() {
-        match position_of_vector((0, 0, 0)) {
-            Some(position) => {
-                assert_eq!(position, 'A')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((0, 1, 0)) {
-            Some(position) => {
-                assert_eq!(position, 'B')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((0, 2, 0)) {
-            Some(position) => {
-                assert_eq!(position, 'C')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((1, 2, 0)) {
-            Some(position) => {
-                assert_eq!(position, 'D')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((2, 2, 0)) {
-            Some(position) => {
-                assert_eq!(position, 'E')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((2, 1, 0)) {
-            Some(position) => {
-                assert_eq!(position, 'F')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((2, 0, 0)) {
-            Some(position) => {
-                assert_eq!(position, 'G')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((1, 0, 0)) {
-            Some(position) => {
-                assert_eq!(position, 'H')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((1, 1, 0)) {
-            Some(position) => {
-                assert_eq!(position, 'I')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((0, 0, 1)) {
-            Some(position) => {
-                assert_eq!(position, 'J')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((0, 1, 1)) {
-            Some(position) => {
-                assert_eq!(position, 'K')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((0, 2, 1)) {
-            Some(position) => {
-                assert_eq!(position, 'L')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((1, 2, 1)) {
-            Some(position) => {
-                assert_eq!(position, 'M')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((2, 2, 1)) {
-            Some(position) => {
-                assert_eq!(position, 'N')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((2, 1, 1)) {
-            Some(position) => {
-                assert_eq!(position, 'O')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((2, 0, 1)) {
-            Some(position) => {
-                assert_eq!(position, 'P')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((1, 0, 1)) {
-            Some(position) => {
-                assert_eq!(position, 'Q')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((0, 0, 2)) {
-            Some(position) => {
-                assert_eq!(position, 'R')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((0, 1, 2)) {
-            Some(position) => {
-                assert_eq!(position, 'S')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((0, 2, 2)) {
-            Some(position) => {
-                assert_eq!(position, 'T')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((1, 2, 2)) {
-            Some(position) => {
-                assert_eq!(position, 'U')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((2, 2, 2)) {
-            Some(position) => {
-                assert_eq!(position, 'V')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((2, 1, 2)) {
-            Some(position) => {
-                assert_eq!(position, 'W')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((2, 0, 2)) {
-            Some(position) => {
-                assert_eq!(position, 'Y')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((1, 0, 2)) {
-            Some(position) => {
-                assert_eq!(position, 'X')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((1, 1, 2)) {
-            Some(position) => {
-                assert_eq!(position, 'Z')
-            }
-            None => {
-                assert!(false);
-            }
-        }
-        match position_of_vector((1, 1, 1)) {
-            Some(position) => {
-                assert_eq!(position, '*')
-            }
-            None => {
-                assert!(false);
-            }
+        for (vector, position) in [
+            ((0, 0, 0), 'A'),
+            ((0, 1, 0), 'B'),
+            ((0, 2, 0), 'C'),
+            ((1, 2, 0), 'D'),
+            ((2, 2, 0), 'E'),
+            ((2, 1, 0), 'F'),
+            ((2, 0, 0), 'G'),
+            ((1, 0, 0), 'H'),
+            ((1, 1, 0), 'I'),
+            ((0, 0, 1), 'J'),
+            ((0, 1, 1), 'K'),
+            ((0, 2, 1), 'L'),
+            ((1, 2, 1), 'M'),
+            ((2, 2, 1), 'N'),
+            ((2, 1, 1), 'O'),
+            ((2, 0, 1), 'P'),
+            ((1, 0, 1), 'Q'),
+            ((0, 0, 2), 'R'),
+            ((0, 1, 2), 'S'),
+            ((0, 2, 2), 'T'),
+            ((1, 2, 2), 'U'),
+            ((2, 2, 2), 'V'),
+            ((2, 1, 2), 'W'),
+            ((2, 0, 2), 'Y'),
+            ((1, 0, 2), 'X'),
+            ((1, 1, 2), 'Z'),
+            ((1, 1, 1), '*'),
+        ] {
+            assert_eq!(position_of_vector(vector).unwrap(), position);
         }
     }
 
     #[test]
     fn position_of_vector_is_inverse_of_vector_of_position() {
-        for position in crate::board::POSITION {
+        for position in POSITION {
             assert_eq!(
                 position,
                 position_of_vector(vector_of_position(position).unwrap()).unwrap()
@@ -582,67 +398,38 @@ mod tests {
 
     #[test]
     fn get_is_winning_combination_checks_arguments_are_distinct() {
-        match get_is_winning_combination('A', 'A', 'B') {
-            Ok(_) => {
-                assert!(false)
-            }
-            Err(error) => {
-                assert_eq!(error, Error::PositionsMustBeDistinct);
-            }
-        }
-        match get_is_winning_combination('A', 'B', 'A') {
-            Ok(_) => {
-                assert!(false)
-            }
-            Err(error) => {
-                assert_eq!(error, Error::PositionsMustBeDistinct);
-            }
-        }
-        match get_is_winning_combination('B', 'A', 'A') {
-            Ok(_) => {
-                assert!(false)
-            }
-            Err(error) => {
-                assert_eq!(error, Error::PositionsMustBeDistinct);
-            }
+        for (position_a, position_b, position_c) in
+            [('A', 'A', 'B'), ('A', 'B', 'A'), ('B', 'A', 'A')]
+        {
+            assert_eq!(
+                get_is_winning_combination(position_a, position_b, position_c).unwrap_err(),
+                Error::PositionsMustBeDistinct
+            );
         }
     }
 
     #[test]
     fn get_is_winning_combination_checks_arguments_are_valid() {
-        match get_is_winning_combination(' ', 'A', 'A') {
-            Ok(_) => {
-                assert!(false)
-            }
-            Err(error) => {
-                assert_eq!(error, Error::InvalidPosition);
-            }
-        }
-        match get_is_winning_combination('A', ' ', 'A') {
-            Ok(_) => {
-                assert!(false)
-            }
-            Err(error) => {
-                assert_eq!(error, Error::InvalidPosition);
-            }
-        }
-        match get_is_winning_combination('A', 'A', ' ') {
-            Ok(_) => {
-                assert!(false)
-            }
-            Err(error) => {
-                assert_eq!(error, Error::InvalidPosition);
-            }
+        for (position_a, position_b, position_c) in [
+            (' ', 'A', 'A'),
+            ('A', ' ', 'A'),
+            ('A', 'A', ' '),
+            (' ', 'A', 'A'),
+        ] {
+            assert_eq!(
+                get_is_winning_combination(position_a, position_b, position_c).unwrap_err(),
+                Error::InvalidPosition
+            );
         }
     }
 
     #[test]
     fn get_is_winning_combination_works_with_winning_combinations() {
-        for (vector1, vector2, vector3) in WINNING_COMBINATIONS {
-            let position_1 = position_of_vector(vector1).unwrap();
-            let position_2 = position_of_vector(vector2).unwrap();
-            let position_3 = position_of_vector(vector3).unwrap();
-            match get_is_winning_combination(position_1, position_2, position_3) {
+        for (vector_a, vector_b, vector_c) in WINNING_COMBINATIONS {
+            let position_a = position_of_vector(vector_a).unwrap();
+            let position_b = position_of_vector(vector_b).unwrap();
+            let position_c = position_of_vector(vector_c).unwrap();
+            match get_is_winning_combination(position_a, position_b, position_c) {
                 Ok(result) => {
                     assert_eq!(true, result)
                 }
@@ -654,8 +441,8 @@ mod tests {
     }
 
     #[test]
-    fn get_is_winning_combination_works_with_combinations_passing_through_center() {
-        for (position_1, position_2, position_3) in [
+    fn get_is_winning_combination_works_with_not_winninig_combinations_passing_through_center() {
+        for (position_a, position_b, position_c) in [
             // All terns with 'A' and '*', except the winning combination ('A', '*', 'V').
             ('A', '*', 'B'),
             ('A', '*', 'C'),
@@ -681,14 +468,10 @@ mod tests {
             ('A', '*', 'X'),
             ('A', '*', 'Z'),
         ] {
-            match get_is_winning_combination(position_1, position_2, position_3) {
-                Ok(result) => {
-                    assert_eq!(false, result)
-                }
-                Err(_) => {
-                    assert!(false)
-                }
-            }
+            assert_eq!(
+                get_is_winning_combination(position_a, position_b, position_c).unwrap(),
+                false
+            );
         }
     }
 }
