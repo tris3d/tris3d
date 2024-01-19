@@ -119,38 +119,20 @@ mod tests {
 
     #[test]
     fn add_player_checks_it_was_not_already_added() {
-        let player_id = String::from("ID");
-        let same_player_id = String::from("ID");
         let mut game = Game::new();
-        match game.add_player(player_id) {
-            Ok(_) => assert!(true),
-            Err(_) => assert!(false),
-        }
-        match game.add_player(same_player_id) {
-            Ok(_) => assert!(false),
-            Err(error) => assert_eq!(error, Error::CannotAddSamePlayerTwice),
-        }
+        game.add_player(String::from("Alice")).unwrap();
+
+        assert_eq!(game.add_player(String::from("Alice")).unwrap_err(), Error::CannotAddSamePlayerTwice);
     }
 
     #[test]
     fn add_player_does_not_add_more_players_than_allowed() {
         let mut game = Game::new();
-        match game.add_player(String::from("player 1")) {
-            Ok(_) => assert!(true),
-            Err(_) => assert!(false),
-        }
-        match game.add_player(String::from("player 2")) {
-            Ok(_) => assert!(true),
-            Err(_) => assert!(false),
-        }
-        match game.add_player(String::from("player 3")) {
-            Ok(_) => assert!(true),
-            Err(_) => assert!(false),
-        }
-        match game.add_player(String::from("player 4")) {
-            Ok(_) => assert!(false),
-            Err(error) => assert_eq!(error, Error::CannotAddMoreThanThreePlayers),
-        }
+        game.add_player(String::from("Alice")).unwrap();
+        game.add_player(String::from("Bob")).unwrap();
+        game.add_player(String::from("Neuromancer")).unwrap();
+
+        assert_eq!(game.add_player(String::from("Another player")).unwrap_err(), Error::CannotAddMoreThanThreePlayers);
     }
 
     #[test]
@@ -159,10 +141,7 @@ mod tests {
         game.add_player(String::from("Alice")).unwrap();
         game.add_player(String::from("Bob")).unwrap();
 
-        match game.add_move(String::from("Alice"), 'A') {
-            Ok(_) => assert!(false),
-            Err(error) => assert_eq!(error, Error::GameNotStartedYet),
-        }
+        assert_eq!(game.add_move(String::from("Alice"), 'A').unwrap_err(), Error::GameNotStartedYet);
     }
 
     #[test]
@@ -172,10 +151,7 @@ mod tests {
         game.add_player(String::from("Bob")).unwrap();
         game.add_player(String::from("Neuromancer")).unwrap();
 
-        match game.add_move(String::from("Alice"), ' ') {
-            Ok(_) => assert!(false),
-            Err(error) => assert_eq!(error, Error::InvalidPosition),
-        }
+        assert_eq!(game.add_move(String::from("Alice"), ' ').unwrap_err(), Error::InvalidPosition);
     }
 
     #[test]
@@ -185,10 +161,7 @@ mod tests {
         game.add_player(String::from("Bob")).unwrap();
         game.add_player(String::from("Neuromancer")).unwrap();
 
-        match game.add_move(String::from("Bob"), 'A') {
-            Ok(_) => assert!(false),
-            Err(error) => assert_eq!(error, Error::PlayerMustWaitForTurn),
-        }
+        assert_eq!(game.add_move(String::from("Bob"), 'A').unwrap_err(), Error::PlayerMustWaitForTurn);
     }
 
     #[test]
@@ -198,14 +171,11 @@ mod tests {
         game.add_player(String::from("Bob")).unwrap();
         game.add_player(String::from("Neuromancer")).unwrap();
 
-        match game.add_move(String::from("Another player"), 'A') {
-            Ok(_) => assert!(false),
-            Err(error) => assert_eq!(error, Error::PlayerNotFound),
-        }
+        assert_eq!(game.add_move(String::from("Another player"), 'A').unwrap_err(), Error::PlayerNotFound);
     }
 
     #[test]
-    fn add_move_checks_that_game_is_not_ver() {
+    fn add_move_checks_if_game_is_over() {
         let mut game = Game::new();
         game.add_player(String::from("Alice")).unwrap();
         game.add_player(String::from("Bob")).unwrap();
@@ -219,9 +189,6 @@ mod tests {
         game.add_move(String::from("Neuromancer"), 'F').unwrap();
         game.add_move(String::from("Alice"), 'V').unwrap();
 
-        match game.add_move(String::from("Bob"), 'B') {
-            Ok(_) => assert!(false),
-            Err(error) => assert_eq!(error, Error::GameIsOver),
-        }
+        assert_eq!(game.add_move(String::from("Bob"), 'B').unwrap_err(), Error::GameIsOver);
     }
 }

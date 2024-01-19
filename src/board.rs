@@ -145,19 +145,18 @@ impl Board {
                 break;
             }
         }
-        if position_is_valid {
-            let num_winning_combinations = self.get_num_winning_combinations();
-            if num_winning_combinations == 0 {
-                if self.moves.len() == 27 {
-                    self.status = Status::Tie;
-                }
-                Ok(num_winning_combinations)
-            } else {
-                self.status = Status::HasWinner;
-                Ok(num_winning_combinations)
+        if !position_is_valid {
+            return Err(Error::InvalidPosition);
+        }
+        let num_winning_combinations = self.get_num_winning_combinations();
+        if num_winning_combinations == 0 {
+            if self.moves.len() == 27 {
+                self.status = Status::Tie;
             }
+            Ok(num_winning_combinations)
         } else {
-            Err(Error::InvalidPosition)
+            self.status = Status::HasWinner;
+            Ok(num_winning_combinations)
         }
     }
 
@@ -178,13 +177,10 @@ impl Board {
         for i in (current_player_index..num_moves).step_by(3) {
             for j in ((i + 3)..num_moves).step_by(3) {
                 for k in ((j + 3)..num_moves).step_by(3) {
-                    if get_is_winning_combination(self.moves[i], self.moves[j], self.moves[k])
-                        .is_ok()
-                    {
-                        // println!(
-                        //     "winning combination {} {} {}",
-                        //     self.moves[i], self.moves[j], self.moves[k]
-                        // );
+                    let is_winning_combination =
+                        get_is_winning_combination(self.moves[i], self.moves[j], self.moves[k])
+                            .unwrap();
+                    if is_winning_combination {
                         num_winning_combinations += 1;
                     }
                 }
@@ -265,25 +261,34 @@ mod tests {
         for (positions, status, num_winning_combinations) in [
             // First move.
             (vec!['A'], Status::IsPlaying, 0),
-            // Player one will move 'A', '*', 'V'.
+            (
+                vec!['A', 'B', 'C', '*', 'D', 'E', 'G', 'H'],
+                Status::IsPlaying,
+                0,
+            ),
+            // Player one wins will 'A', '*', 'V'.
             (
                 vec!['A', 'B', 'C', '*', 'D', 'E', 'V'],
                 Status::HasWinner,
                 1,
             ),
-            // TODO why this is failing?
-            // (
-            //     vec!['A', 'B', 'C', '*', 'D', 'E', 'G'],
-            //     Status::IsPlaying,
-            //     0,
-            // ),
-            // TODO winner with more than one winning combination.
-            // TODO add all positions with a Tie
-            // (
-            //     vec!['A', 'B', 'C', '*', 'D', 'E', 'V'],
-            //     Status::Tie,
-            //     0,
-            // ),
+            // Two winning combinations.
+            (
+                vec![
+                    'A', 'B', 'C', 'G', 'F', 'E', 'T', 'S', 'R', 'V', 'W', 'Y', '*',
+                ],
+                Status::HasWinner,
+                2,
+            ),
+            // Board filled with all positions, no winner.
+            (
+                vec![
+                    '*', 'A', 'B', 'V', 'W', 'C', 'D', 'Y', 'X', 'E', 'F', 'R', 'S', 'G', 'H', 'T',
+                    'U', 'P', 'J', 'N', 'L', 'O', 'K', 'M', 'Q', 'Z', 'I',
+                ],
+                Status::Tie,
+                0,
+            ),
         ] {
             let mut board = Board::default();
             for p in positions {
