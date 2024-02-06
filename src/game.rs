@@ -16,6 +16,7 @@ pub struct Game {
 
 impl Game {
     /// Create an new game, with no players and an empty board.
+    #[must_use]
     pub fn new() -> Self {
         Self {
             board: Board::new(),
@@ -79,6 +80,7 @@ impl Game {
         }
     }
 
+    #[must_use]
     pub fn num_players(&self) -> usize {
         self.player_ids.len()
     }
@@ -122,7 +124,10 @@ mod tests {
         let mut game = Game::new();
         game.add_player(String::from("Alice")).unwrap();
 
-        assert_eq!(game.add_player(String::from("Alice")).unwrap_err(), Error::CannotAddSamePlayerTwice);
+        assert_eq!(
+            game.add_player(String::from("Alice")).unwrap_err(),
+            Error::CannotAddSamePlayerTwice
+        );
     }
 
     #[test]
@@ -132,7 +137,10 @@ mod tests {
         game.add_player(String::from("Bob")).unwrap();
         game.add_player(String::from("Neuromancer")).unwrap();
 
-        assert_eq!(game.add_player(String::from("Another player")).unwrap_err(), Error::CannotAddMoreThanThreePlayers);
+        assert_eq!(
+            game.add_player(String::from("Another player")).unwrap_err(),
+            Error::CannotAddMoreThanThreePlayers
+        );
     }
 
     #[test]
@@ -141,7 +149,10 @@ mod tests {
         game.add_player(String::from("Alice")).unwrap();
         game.add_player(String::from("Bob")).unwrap();
 
-        assert_eq!(game.add_move(String::from("Alice"), 'A').unwrap_err(), Error::GameNotStartedYet);
+        assert_eq!(
+            game.add_move(String::from("Alice"), 'A').unwrap_err(),
+            Error::GameNotStartedYet
+        );
     }
 
     #[test]
@@ -151,7 +162,10 @@ mod tests {
         game.add_player(String::from("Bob")).unwrap();
         game.add_player(String::from("Neuromancer")).unwrap();
 
-        assert_eq!(game.add_move(String::from("Alice"), ' ').unwrap_err(), Error::InvalidPosition);
+        assert_eq!(
+            game.add_move(String::from("Alice"), ' ').unwrap_err(),
+            Error::InvalidPosition
+        );
     }
 
     #[test]
@@ -161,7 +175,10 @@ mod tests {
         game.add_player(String::from("Bob")).unwrap();
         game.add_player(String::from("Neuromancer")).unwrap();
 
-        assert_eq!(game.add_move(String::from("Bob"), 'A').unwrap_err(), Error::PlayerMustWaitForTurn);
+        assert_eq!(
+            game.add_move(String::from("Bob"), 'A').unwrap_err(),
+            Error::PlayerMustWaitForTurn
+        );
     }
 
     #[test]
@@ -171,7 +188,11 @@ mod tests {
         game.add_player(String::from("Bob")).unwrap();
         game.add_player(String::from("Neuromancer")).unwrap();
 
-        assert_eq!(game.add_move(String::from("Another player"), 'A').unwrap_err(), Error::PlayerNotFound);
+        assert_eq!(
+            game.add_move(String::from("Another player"), 'A')
+                .unwrap_err(),
+            Error::PlayerNotFound
+        );
     }
 
     #[test]
@@ -189,6 +210,9 @@ mod tests {
         game.add_move(String::from("Neuromancer"), 'F').unwrap();
         game.add_move(String::from("Alice"), 'V').unwrap();
 
-        assert_eq!(game.add_move(String::from("Bob"), 'B').unwrap_err(), Error::GameIsOver);
+        assert_eq!(
+            game.add_move(String::from("Bob"), 'B').unwrap_err(),
+            Error::GameIsOver
+        );
     }
 }
